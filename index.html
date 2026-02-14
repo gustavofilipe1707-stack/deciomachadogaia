@@ -4,8 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMG - Décio Machado Gaia</title>
+    <title>DMG - Saída Escolar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         :root {
             --bg: #0f172a;
@@ -23,12 +25,16 @@
             font-family: 'Segoe UI', sans-serif;
             margin: 0;
             padding: 15px;
-            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
             max-width: 650px;
             margin: auto;
+            flex: 1;
+            width: 100%;
         }
 
         .hidden {
@@ -38,12 +44,12 @@
         header {
             text-align: center;
             border-bottom: 1px solid #334155;
-            padding-bottom: 15px;
+            padding-bottom: 10px;
             margin-bottom: 20px;
         }
 
         header h1 {
-            font-size: 20px;
+            font-size: 22px;
             color: var(--primary);
             margin: 5px 0;
             text-transform: uppercase;
@@ -53,13 +59,11 @@
         .frase-dia {
             font-size: 13px;
             font-style: italic;
-            color: var(--primary);
-            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 15px;
             display: block;
-            padding: 12px;
-            background: rgba(0, 212, 255, 0.07);
-            border-radius: 10px;
-            border: 1px solid rgba(0, 212, 255, 0.1);
+            min-height: 40px;
+            text-align: center;
         }
 
         .card {
@@ -68,7 +72,7 @@
             border-radius: 15px;
             border: 1px solid rgba(255, 255, 255, 0.05);
             margin-bottom: 20px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }
 
         input {
@@ -138,195 +142,183 @@
             align-items: center;
         }
 
-        .timer-badge {
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
-            background: #1e293b;
-            color: var(--text);
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-bottom: 5px;
+        footer {
+            margin-top: 30px;
+            padding: 20px;
+            border-top: 1px solid #334155;
+            text-align: center;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 15px 15px 0 0;
         }
 
-        .atraso-critico {
-            background: var(--danger) !important;
-            animation: blinker 1.2s linear infinite;
+        .alerta-chuva {
+            color: var(--danger);
+            font-weight: 900;
+            display: block;
+            margin-top: 10px;
+            font-size: 16px;
+            animation: blinker 1.5s linear infinite;
         }
 
         @keyframes blinker {
             50% {
-                opacity: 0.5;
+                opacity: 0;
             }
         }
 
-        .table-entregues {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            margin-top: 10px;
-            text-transform: uppercase;
-        }
-
-        .table-entregues th {
-            text-align: left;
-            color: var(--primary);
-            padding: 10px 8px;
-            border-bottom: 2px solid #334155;
-        }
-
-        .table-entregues td {
-            padding: 12px 8px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        #cronometro-pai {
-            font-size: 48px;
-            font-weight: 900;
-            color: var(--warning);
-            margin: 15px 0;
-            font-family: monospace;
+        /* Estilo para o widget de clima */
+        #openweathermap-widget-11 {
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
         }
     </style>
 </head>
 
 <body>
+
     <div class="container">
         <header>
-            <h1>DÉCIO MACHADO GAIA</h1><span id="frase-motivacional" class="frase-dia"></span>
+            <h1>DÉCIO MACHADO GAIA</h1>
+            <div id="frase-container" class="frase-dia">"Buscando a melhor educação para nossos alunos."</div>
         </header>
+
         <div id="screen-home">
             <button class="btn-access" onclick="show('screen-parents')"><i class="bi bi-people-fill"></i> ÁREA DOS
                 PAIS</button>
             <button class="btn-access" onclick="show('screen-login-school')"><i class="bi bi-mortarboard-fill"></i>
                 MONITORIA ESCOLA</button>
         </div>
+
         <div id="screen-parents" class="card hidden">
-            <h2 style="color: var(--primary); margin:0 0 15px 0; font-size: 18px; text-align: center;">IDENTIFICAÇÃO DE
-                SAÍDA</h2>
             <div id="lista-filhos">
-                <div class="filho-grupo"><input type="text" class="c-name" placeholder="NOME DO ALUNO"
-                        autocomplete="off"><input type="text" class="c-room" placeholder="SÉRIE/SALA"
-                        autocomplete="off"></div>
+                <div class="filho-grupo"><input type="text" class="c-name" placeholder="NOME DO ALUNO"><input
+                        type="text" class="c-room" placeholder="SÉRIE / SALA"></div>
             </div>
             <button onclick="addCamposFilho()"
-                style="background:none; border:1px dashed var(--primary); color:var(--primary); width:100%; padding:12px; border-radius:8px; margin-bottom:20px; font-weight: bold; cursor: pointer;">+
-                ADICIONAR OUTRO ALUNO</button>
-            <label style="font-size: 12px; color: #94a3b8; margin-left: 5px;">NOME DO RESPONSÁVEL</label><input
-                type="text" id="resp-name" placeholder="RESPONSÁVEL PELA RETIRADA" autocomplete="off">
-            <button class="btn-cheguei" onclick="processarEnvio()">ESTOU NO PORTÃO</button><button class="btn-voltar"
-                onclick="show('screen-home')">VOLTAR</button>
+                style="background:none; border:1px dashed var(--primary); color:var(--primary); width:100%; padding:10px; border-radius:8px; margin-bottom:15px; font-weight:bold;">+
+                ADICIONAR ALUNO</button>
+            <input type="text" id="resp-name" placeholder="NOME DO RESPONSÁVEL">
+            <button class="btn-cheguei" onclick="processarEnvio()">ESTOU NO PORTÃO</button>
+            <button class="btn-voltar" onclick="show('screen-home')">VOLTAR</button>
         </div>
-        <div id="screen-status" class="card hidden" style="text-align:center;">
-            <div id="status-wait"><span style="font-size: 60px; display: block; margin-bottom: 10px;">😊</span>
-                <h3>AGUARDANDO LIBERAÇÃO</h3>
-                <div id="cronometro-pai">00:00</div>
-                <p style="font-size:14px; color:#94a3b8;">A SEGURANÇA DO SEU FILHO É NOSSA PRIORIDADE.</p>
-            </div>
-            <div id="status-done" class="hidden">
-                <div style="font-size:60px; color:var(--success); margin-bottom:15px;"><i
-                        class="bi bi-emoji-smile-fill"></i></div>
-                <h3 style="color:var(--success); margin: 0;">RETIRADA FINALIZADA!</h3>
-                <p style="margin-top: 10px; font-weight: bold;">TENHA UM EXCELENTE DIA COM SUA FAMÍLIA!</p>
-            </div>
-            <button class="btn-voltar" onclick="show('screen-home')">INÍCIO</button>
-        </div>
+
         <div id="screen-monitor" class="card hidden">
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px;">
-                <h2 style="margin:0; font-size: 18px; color: var(--primary);">FILA DE SAÍDA</h2><span id="badge-total"
-                    style="background: var(--primary); color: #000; padding: 2px 10px; border-radius: 20px; font-weight: bold; font-size: 12px;">0
-                    ALUNOS</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2 style="margin:0">CHAMADA</h2>
+                <span id="badge-total"
+                    style="background:var(--primary); color:#000; padding:4px 15px; border-radius:20px; font-weight:bold;">0</span>
             </div>
             <div id="fila-monitor"></div>
-            <h3
-                style="font-size:15px; color: var(--success); margin-top:40px; border-bottom: 1px solid #334155; padding-bottom:5px;">
-                HISTÓRICO RECENTE</h3>
-            <input type="text" id="search-entregues" onkeyup="renderEntregues()" placeholder="FILTRAR HISTÓRICO...">
-            <div style="overflow-x: auto;">
-                <table class="table-entregues">
-                    <thead>
-                        <tr>
-                            <th>ALUNO</th>
-                            <th>SALA</th>
-                            <th>RESPONSÁVEL</th>
-                            <th>SAÍDA</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-entregues"></tbody>
-                </table>
-            </div>
-            <button class="btn-voltar" onclick="show('screen-home')">SAIR DO PAINEL</button>
+            <button class="btn-voltar" onclick="show('screen-home')">SAIR</button>
         </div>
+
         <div id="screen-login-school" class="card hidden">
-            <h3 style="text-align: center; color: var(--primary);">ACESSO MONITOR</h3><input type="password"
-                id="pass-school" placeholder="SENHA DO MONITOR"><button class="btn-cheguei"
-                style="background:var(--primary); color:#000;" onclick="loginMonitor()">ENTRAR NO PAINEL</button><button
-                class="btn-voltar" onclick="show('screen-home')">CANCELAR</button>
+            <input type="password" id="pass-school" placeholder="SENHA">
+            <button class="btn-cheguei" onclick="loginMonitor()">ENTRAR</button>
         </div>
     </div>
+
+    <footer>
+        <div id="weather-box">
+            <p style="margin:0 0 10px 0; font-size:14px; opacity:0.9;">Previsão do tempo para a saída:</p>
+            <div id="openweathermap-widget-11"></div>
+            <div id="chuva-aviso" class="alerta-chuva hidden">⚠️ LEVE O GUARDA-CHUVA!</div>
+        </div>
+        <p style="margin-top:15px; font-size:10px; opacity:0.4;">SÃO CAETANO DO SUL &bull; BOA VISTA</p>
+    </footer>
+
     <script>
-        let filaAtiva = [], entregues = [], timerInterval = null, tempoInicialPai = null;
-        const frasesPais = [
-            "A PARCERIA ENTRE FAMÍLIA E ESCOLA É A BASE PARA O SUCESSO DOS NOSSOS ALUNOS.",
-            "SEU APOIO E DEDICAÇÃO TRANSFORMAM A JORNADA ESCOLAR DO SEU FILHO.",
-            "RESPONSÁVEIS: SUA PRESENÇA NA VIDA ESCOLAR FAZ TODA A DIFERENÇA.",
-            "EDUCAR É UM ATO DE AMOR COMPARTILHADO ENTRE PAIS E EDUCADORES.",
-            "PARABÉNS POR ACOMPANHAR DE PERTO O CRESCIMENTO E O APRENDIZADO DO SEU FILHO."
+        // Configurações Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDdVksMaItsqib7g2wIye78q70q0KK3fk",
+            authDomain: "saidagaia.firebaseapp.com",
+            databaseURL: "https://saidagaia-default-rtdb.firebaseio.com",
+            projectId: "saidagaia",
+            storageBucket: "saidagaia.firebasestorage.app",
+            messagingSenderId: "711059544383",
+            appId: "1:711059544383:web:217491ab4525a083709b8a"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Lógica das Frases
+        const frases = [
+            "O sucesso é a soma de pequenos esforços repetidos.",
+            "Educar o Heitor e a Maya é construir o futuro.",
+            "Grandes sonhos começam com bons estudos.",
+            "A escola abre portas que ninguém pode fechar."
         ];
-        document.getElementById('frase-motivacional').innerText = `"${frasesPais[new Date().getDate() % frasesPais.length]}"`;
+        document.getElementById('frase-container').innerText = `"${frases[Math.floor(Math.random() * frases.length)]}"`;
+
+        // Widget de Clima Estável
+        window.myWidgetParam ? window.myWidgetParam : window.myWidgetParam = [];
+        window.myWidgetParam.push({ id: 11, cityid: '3449333', appid: 'f726715f3f458e0a8166c303f8f128e6', units: 'metric', containerid: 'openweathermap-widget-11', });
+        (function () { var script = document.createElement('script'); script.async = true; script.charset = "utf-8"; script.src = "//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/weather-widget-generator.js"; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s); })();
+
+        // Lógica de Chuva Inteligente (Consulta API em Background)
+        async function checkRain() {
+            try {
+                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?id=3449333&appid=f726715f3f458e0a8166c303f8f128e6`);
+                const data = await res.json();
+                const condicao = data.weather[0].main.toLowerCase();
+                if (condicao.includes('rain') || condicao.includes('drizzle')) {
+                    document.getElementById('chuva-aviso').classList.remove('hidden');
+                }
+            } catch (e) { console.log("Erro check chuva"); }
+        }
+        checkRain();
+
+        // Navegação e Firebase
         function show(id) { document.querySelectorAll('.container > div').forEach(el => el.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
-        function addCamposFilho() { const div = document.createElement('div'); div.className = "filho-grupo"; div.innerHTML = `<input type="text" class="c-name" placeholder="NOME DO ALUNO" autocomplete="off"><input type="text" class="c-room" placeholder="SÉRIE/SALA" autocomplete="off">`; document.getElementById('lista-filhos').appendChild(div); }
-        function formatTime(s) { if (isNaN(s) || s < 0) return "00:00"; const m = Math.floor(s / 60).toString().padStart(2, '0'), r = (s % 60).toString().padStart(2, '0'); return `${m}:${r}`; }
+
+        function addCamposFilho() {
+            const div = document.createElement('div');
+            div.innerHTML = `<input type="text" class="c-name" placeholder="NOME DO ALUNO"><input type="text" class="c-room" placeholder="SÉRIE / SALA">`;
+            document.getElementById('lista-filhos').appendChild(div);
+        }
+
         function processarEnvio() {
-            const resp = document.getElementById('resp-name').value.trim();
-            const nomes = document.querySelectorAll('.c-name'), salas = document.querySelectorAll('.c-room'), agora = new Date();
-            if (!resp) return alert("INFORME O NOME DO RESPONSÁVEL.");
-            let cadastrou = false;
+            const resp = document.getElementById('resp-name').value.trim().toUpperCase();
+            const nomes = document.querySelectorAll('.c-name');
+            const salas = document.querySelectorAll('.c-room');
+            if (!resp) return alert("INFORME SEU NOME!");
             nomes.forEach((n, i) => {
-                if (n.value.trim() !== "") {
-                    filaAtiva.push({ aluno: n.value.toUpperCase().trim(), sala: salas[i].value.toUpperCase().trim(), responsavel: resp.toUpperCase().trim(), chegada: agora });
-                    cadastrou = true;
+                const nome = n.value.trim().toUpperCase();
+                if (nome) {
+                    db.ref('fila/').push({ aluno: nome, sala: salas[i].value.toUpperCase(), responsavel: resp, chegada: new Date().getTime(), status: 'aguardando' });
                 }
             });
-            if (!cadastrou) return alert("INFORME AO MENOS UM ALUNO.");
-            tempoInicialPai = agora; iniciarLoop(); show('screen-status');
-            document.getElementById('status-wait').classList.remove('hidden'); document.getElementById('status-done').classList.add('hidden');
+            alert("Chamada enviada!");
+            location.reload();
         }
-        function iniciarLoop() {
-            if (timerInterval) clearInterval(timerInterval); timerInterval = setInterval(() => {
-                const agora = new Date();
-                if (tempoInicialPai) document.getElementById('cronometro-pai').innerText = formatTime(Math.floor((agora - tempoInicialPai) / 1000));
-                if (!document.getElementById('screen-monitor').classList.contains('hidden')) renderFila();
-            }, 1000);
+
+        function loginMonitor() {
+            if (document.getElementById('pass-school').value === 'escola') { show('screen-monitor'); escutarBanco(); }
         }
-        function renderFila() {
-            const container = document.getElementById('fila-monitor');
-            document.getElementById('badge-total').innerText = `${filaAtiva.length} ALUNOS`;
-            container.innerHTML = filaAtiva.length ? '' : '<p style="text-align:center; padding:20px;">FILA VAZIA.</p>';
-            [...filaAtiva].sort((a, b) => a.chegada - b.chegada).forEach((item) => {
-                const diff = Math.floor((new Date() - item.chegada) / 1000);
-                container.innerHTML += `<div class="fila-item"><div><span class="timer-badge ${diff >= 300 ? 'atraso-critico' : ''}"><i class="bi bi-clock"></i> ${formatTime(diff)}</span><br><strong style="font-size:17px;">${item.aluno}</strong><br><small style="color:var(--primary); font-weight:bold;">SALA: ${item.sala}</small><br><small style="color:#94a3b8;">RESP: ${item.responsavel}</small></div><button class="btn-cheguei" style="width:auto; padding:12px; font-size:12px;" onclick="entregarCriança('${item.aluno}')">ENTREGUE</button></div>`;
+
+        function escutarBanco() {
+            db.ref('fila/').on('value', snapshot => {
+                const dados = snapshot.val();
+                const containerFila = document.getElementById('fila-monitor');
+                containerFila.innerHTML = "";
+                let count = 0;
+                if (dados) {
+                    Object.keys(dados).forEach(id => {
+                        const item = dados[id];
+                        if (item.status === 'aguardando') {
+                            count++;
+                            containerFila.innerHTML += `<div class="fila-item"><div><strong>${item.aluno}</strong><br><small>${item.sala} | ${item.responsavel}</small></div><button class="btn-cheguei" style="width:auto; padding:10px;" onclick="darBaixa('${id}')">OK</button></div>`;
+                        }
+                    });
+                }
+                document.getElementById('badge-total').innerText = count;
             });
         }
-        function entregarCriança(nome) {
-            const idx = filaAtiva.findIndex(i => i.aluno === nome);
-            if (idx === -1) return;
-            const item = filaAtiva.splice(idx, 1)[0];
-            item.horaSaida = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            entregues.unshift(item); renderFila(); renderEntregues();
-            document.getElementById('status-wait').classList.add('hidden'); document.getElementById('status-done').classList.remove('hidden');
+
+        function darBaixa(id) {
+            db.ref('fila/' + id).update({ status: 'entregue', horaSaida: new Date().toLocaleTimeString() });
         }
-        function renderEntregues() {
-            const termo = document.getElementById('search-entregues').value.toUpperCase(), container = document.getElementById('lista-entregues');
-            container.innerHTML = '';
-            entregues.filter(i => i.aluno.includes(termo) || i.sala.includes(termo) || i.responsavel.includes(termo)).forEach(item => {
-                container.innerHTML += `<tr><td><strong>${item.aluno}</strong></td><td>${item.sala}</td><td>${item.responsavel}</td><td style="color:var(--success)">${item.horaSaida}</td></tr>`;
-            });
-        }
-        function loginMonitor() { if (document.getElementById('pass-school').value === 'escola') { show('screen-monitor'); iniciarLoop(); renderFila(); renderEntregues(); } else alert("SENHA INCORRETA"); }
     </script>
 </body>
 
