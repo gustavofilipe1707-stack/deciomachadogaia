@@ -19,16 +19,22 @@
         .btn-success { background: var(--success); color: white; }
         .btn-dark { background: #334155; color: white; }
         
-        /* Efeito Piscar */
         @keyframes blink { 0% { border-color: transparent; } 50% { border-color: var(--warning); background: #2d3748; } 100% { border-color: transparent; } }
         .novo-aluno { animation: blink 1s infinite; border: 2px solid var(--warning) !important; }
 
-        /* Tabela Monitoria */
         .monitor-grid { display: grid; grid-template-columns: 2fr 1fr 0.8fr 1.5fr 1fr; gap: 10px; align-items: center; padding: 12px; border-bottom: 1px solid #334155; font-size: 13px; }
         .header-grid { background: #1e293b; font-weight: bold; color: var(--warning); border-bottom: 2px solid #334155; }
         
         .timer { font-size: 45px; font-weight: bold; color: var(--warning); margin: 10px 0; }
         #modal-foto { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; cursor: pointer; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #print-section, #print-section * { visibility: visible; }
+            #print-section { position: absolute; left: 0; top: 0; width: 100%; color: black !important; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid black; padding: 8px; text-align: left; }
+        }
     </style>
 </head>
 <body>
@@ -50,7 +56,7 @@
 
     <div id="screen-adm" class="card hidden">
         <h3>CADASTRO E GESTÃO</h3>
-        <button class="btn btn-primary" onclick="exportarCSV()"><i class="bi bi-download"></i> EXPORTAR PAIS (CSV)</button>
+        <button class="btn btn-primary" onclick="gerarRelatorio()"><i class="bi bi-file-pdf"></i> GERAR LISTA DE PAIS (PDF/IMPRIMIR)</button>
         <hr style="opacity:0.2; margin: 20px 0;">
         <input type="number" id="reg-cpf" placeholder="CPF PAI">
         <input type="text" id="reg-pai" placeholder="NOME COMPLETO PAI">
@@ -87,11 +93,13 @@
         <div id="lista-filhos-pai" style="color:var(--primary); font-weight:bold; margin-bottom:20px;"></div>
         <div id="area-chamar"><button class="btn btn-success" style="padding:25px" onclick="chamar()">ESTOU NO PORTÃO</button></div>
         <div id="waiting-area" class="hidden">
-            <div class="timer" id="cronometro">00:00</div>
+            <div id="cont-cronometro"><div class="timer" id="cronometro">00:00</div></div>
             <p id="status-msg">Aguarde, estamos trazendo seu filho...</p>
         </div>
         <button class="btn btn-dark" onclick="location.reload()" style="margin-top:30px">SAIR</button>
     </div>
+
+    <div id="print-section" class="hidden"></div>
 
     <div id="modal-foto" class="hidden" onclick="this.classList.add('hidden')">
         <img id="img-modal" style="width:85%; max-width: 450px; border-radius:15px; border:4px solid var(--primary);">
@@ -112,20 +120,21 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let userPai = null, localStream = null, fotoBase64 = null, ultimaFilaCount = 0;
+    let userPai = null, localStream = null, fotoBase64 = null, ultimaFilaCount = 0, timerInterval = null;
 
-    // Som de Sino (Suave)
-    function playSininho() {
+    // Som Estilo Notificação (Pop)
+    function playPop() {
         try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.5);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+            osc.start(); osc.stop(ctx.currentTime + 0.1);
         } catch(e) {}
     }
 
@@ -139,20 +148,18 @@
         if(document.getElementById(inputId).value === senha) goTo(tela); else alert("Senha incorreta");
     }
 
-    // CSV DOWNLOAD
-    function exportarCSV() {
+    // RELATÓRIO PDF/PRINT
+    function gerarRelatorio() {
         db.ref('cadastros/').once('value', s => {
-            let csv = "Nome Pai;CPF;Filhos\n";
-            s.forEach(pai => {
-                const d = pai.val();
-                const filhos = d.filhos.map(f => `${f.nome} (${f.serie})`).join(" | ");
-                csv += `${d.responsavel};${pai.key};${filhos}\n`;
+            let html = "<h2>Relatório de Pais e Alunos - Escola DMG</h2><table><tr><th>Responsável</th><th>CPF</th><th>Filhos</th></tr>";
+            s.forEach(p => {
+                const d = p.val();
+                const filhos = d.filhos.map(f => `${f.nome} (${f.serie})`).join("<br>");
+                html += `<tr><td>${d.responsavel}</td><td>${p.key}</td><td>${filhos}</td></tr>`;
             });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "cadastros_dmg.csv";
-            link.click();
+            html += "</table>";
+            document.getElementById('print-section').innerHTML = html;
+            window.print();
         });
     }
 
@@ -206,11 +213,18 @@
         });
         document.getElementById('area-chamar').classList.add('hidden');
         document.getElementById('waiting-area').classList.remove('hidden');
-        let seg = 0; setInterval(() => { seg++; document.getElementById('cronometro').innerText = Math.floor(seg/60).toString().padStart(2,'0') + ":" + (seg%60).toString().padStart(2,'0'); }, 1000);
+        let seg = 0; 
+        timerInterval = setInterval(() => { 
+            seg++; 
+            document.getElementById('cronometro').innerText = Math.floor(seg/60).toString().padStart(2,'0') + ":" + (seg%60).toString().padStart(2,'0'); 
+        }, 1000);
+        
         ids.forEach(id => {
             db.ref('fila/' + id).on('value', s => {
                 if(s.val() && s.val().status === 'entregue'){
-                    playSininho();
+                    playPop();
+                    clearInterval(timerInterval); // Para o cronômetro
+                    document.getElementById('cont-cronometro').classList.add('hidden'); // Esconde o cronômetro
                     document.getElementById('status-msg').innerHTML = "<b style='color:var(--success); font-size:24px;'>FILHO ENTREGUE!<br>Muito obrigado.</b>";
                 }
             });
@@ -225,7 +239,7 @@
             const dados = snap.val() || {};
             const keys = Object.keys(dados).filter(k => dados[k].status === 'aguardando');
             
-            if(keys.length > ultimaFilaCount) playSininho();
+            if(keys.length > ultimaFilaCount) playPop();
             ultimaFilaCount = keys.length;
 
             espera.innerHTML = "";
