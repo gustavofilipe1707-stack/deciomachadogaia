@@ -31,14 +31,14 @@
         }
 
         .container {
-            max-width: 650px;
+            max-width: 800px;
             margin: auto;
             flex: 1;
             width: 100%;
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
 
         header {
@@ -49,7 +49,7 @@
         }
 
         header h1 {
-            font-size: 22px;
+            font-size: 20px;
             color: var(--primary);
             margin: 5px 0;
             text-transform: uppercase;
@@ -61,8 +61,6 @@
             font-style: italic;
             color: #94a3b8;
             margin-bottom: 15px;
-            display: block;
-            min-height: 40px;
             text-align: center;
         }
 
@@ -103,7 +101,7 @@
 
         .btn-access {
             width: 100%;
-            padding: 22px;
+            padding: 20px;
             border-radius: 12px;
             border: 1px solid #334155;
             background: var(--card);
@@ -131,6 +129,7 @@
             text-transform: uppercase;
         }
 
+        /* FILA MONITOR */
         .fila-item {
             background: #0a0f1d;
             padding: 15px;
@@ -142,31 +141,52 @@
             align-items: center;
         }
 
+        .timer-badge {
+            background: var(--warning);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-weight: 800;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        /* TABELA HISTÓRICO */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        th {
+            text-align: left;
+            color: var(--primary);
+            padding: 10px;
+            border-bottom: 2px solid #334155;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .row-entregue {
+            color: #94a3b8;
+        }
+
         footer {
-            margin-top: 30px;
-            padding: 20px;
+            margin-top: 20px;
+            padding: 15px;
             border-top: 1px solid #334155;
             text-align: center;
-            background: rgba(30, 41, 59, 0.8);
-            border-radius: 15px 15px 0 0;
         }
 
-        .alerta-chuva {
-            color: var(--danger);
-            font-weight: 900;
-            display: block;
-            margin-top: 10px;
-            font-size: 16px;
-            animation: blinker 1.5s linear infinite;
-        }
-
-        @keyframes blinker {
-            50% {
-                opacity: 0;
-            }
-        }
-
-        /* Estilo para o widget de clima */
         #openweathermap-widget-11 {
             margin: 0 auto;
             display: flex;
@@ -180,56 +200,80 @@
     <div class="container">
         <header>
             <h1>DÉCIO MACHADO GAIA</h1>
-            <div id="frase-container" class="frase-dia">"Buscando a melhor educação para nossos alunos."</div>
+            <div id="frase-container" class="frase-dia">"A educação transforma o mundo."</div>
         </header>
 
         <div id="screen-home">
-            <button class="btn-access" onclick="show('screen-parents')"><i class="bi bi-people-fill"></i> ÁREA DOS
+            <button class="btn-access" onclick="goTo('screen-parents')"><i class="bi bi-people-fill"></i> ÁREA DOS
                 PAIS</button>
-            <button class="btn-access" onclick="show('screen-login-school')"><i class="bi bi-mortarboard-fill"></i>
+            <button class="btn-access" onclick="goTo('screen-login-school')"><i class="bi bi-mortarboard-fill"></i>
                 MONITORIA ESCOLA</button>
         </div>
 
         <div id="screen-parents" class="card hidden">
             <div id="lista-filhos">
-                <div class="filho-grupo"><input type="text" class="c-name" placeholder="NOME DO ALUNO"><input
-                        type="text" class="c-room" placeholder="SÉRIE / SALA"></div>
+                <div class="filho-grupo">
+                    <input type="text" class="c-name" placeholder="NOME DO ALUNO">
+                    <input type="text" class="c-room" placeholder="SÉRIE / SALA">
+                </div>
             </div>
             <button onclick="addCamposFilho()"
-                style="background:none; border:1px dashed var(--primary); color:var(--primary); width:100%; padding:10px; border-radius:8px; margin-bottom:15px; font-weight:bold;">+
-                ADICIONAR ALUNO</button>
+                style="background:none; border:1px dashed var(--primary); color:var(--primary); width:100%; padding:10px; border-radius:8px; margin-bottom:15px;">+
+                OUTRO ALUNO</button>
             <input type="text" id="resp-name" placeholder="NOME DO RESPONSÁVEL">
             <button class="btn-cheguei" onclick="processarEnvio()">ESTOU NO PORTÃO</button>
-            <button class="btn-voltar" onclick="show('screen-home')">VOLTAR</button>
+            <button class="btn-voltar" onclick="goTo('screen-home')">VOLTAR</button>
+        </div>
+
+        <div id="screen-status" class="card hidden" style="text-align:center;">
+            <h3 style="color:var(--success)">AVISO ENVIADO!</h3>
+            <p>Aguarde o monitor liberar.</p>
+            <div id="cronometro-pai" style="font-size: 40px; font-weight: 800; margin: 15px 0;">00:00</div>
+            <button class="btn-voltar" onclick="location.reload()">NOVO CHECK-IN</button>
         </div>
 
         <div id="screen-monitor" class="card hidden">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h2 style="margin:0">CHAMADA</h2>
+                <h2 style="margin:0; font-size:18px; color:var(--warning)">AGUARDANDO SAÍDA</h2>
                 <span id="badge-total"
-                    style="background:var(--primary); color:#000; padding:4px 15px; border-radius:20px; font-weight:bold;">0</span>
+                    style="background:var(--primary); color:#000; padding:2px 10px; border-radius:15px; font-weight:bold;">0</span>
             </div>
+
             <div id="fila-monitor"></div>
-            <button class="btn-voltar" onclick="show('screen-home')">SAIR</button>
+
+            <h2
+                style="margin:30px 0 10px 0; font-size:18px; color:var(--success); border-top: 1px solid #334155; padding-top: 20px;">
+                ALUNOS ENTREGUES</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ALUNO</th>
+                            <th>SALA</th>
+                            <th>RESPONSÁVEL</th>
+                            <th>HORA</th>
+                            <th>ESPERA</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-entregues"></tbody>
+                </table>
+            </div>
+
+            <button class="btn-voltar" onclick="location.reload()">VOLTAR AO INÍCIO</button>
         </div>
 
         <div id="screen-login-school" class="card hidden">
+            <h3 style="text-align:center">LOGIN MONITOR</h3>
             <input type="password" id="pass-school" placeholder="SENHA">
-            <button class="btn-cheguei" onclick="loginMonitor()">ENTRAR</button>
+            <button class="btn-cheguei" onclick="loginMonitor()">ACESSAR FILA</button>
         </div>
     </div>
 
     <footer>
-        <div id="weather-box">
-            <p style="margin:0 0 10px 0; font-size:14px; opacity:0.9;">Previsão do tempo para a saída:</p>
-            <div id="openweathermap-widget-11"></div>
-            <div id="chuva-aviso" class="alerta-chuva hidden">⚠️ LEVE O GUARDA-CHUVA!</div>
-        </div>
-        <p style="margin-top:15px; font-size:10px; opacity:0.4;">SÃO CAETANO DO SUL &bull; BOA VISTA</p>
+        <div id="openweathermap-widget-11"></div>
     </footer>
 
     <script>
-        // Configurações Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBDdVksMaItsqib7g2wIye78q70q0KK3fk",
             authDomain: "saidagaia.firebaseapp.com",
@@ -242,73 +286,102 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Lógica das Frases
-        const frases = [
-            "O sucesso é a soma de pequenos esforços repetidos.",
-            "Educar o Heitor e a Maya é construir o futuro.",
-            "Grandes sonhos começam com bons estudos.",
-            "A escola abre portas que ninguém pode fechar."
-        ];
-        document.getElementById('frase-container').innerText = `"${frases[Math.floor(Math.random() * frases.length)]}"`;
-
-        // Widget de Clima Estável
-        window.myWidgetParam ? window.myWidgetParam : window.myWidgetParam = [];
-        window.myWidgetParam.push({ id: 11, cityid: '3449333', appid: 'f726715f3f458e0a8166c303f8f128e6', units: 'metric', containerid: 'openweathermap-widget-11', });
-        (function () { var script = document.createElement('script'); script.async = true; script.charset = "utf-8"; script.src = "//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/weather-widget-generator.js"; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s); })();
-
-        // Lógica de Chuva Inteligente (Consulta API em Background)
-        async function checkRain() {
-            try {
-                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?id=3449333&appid=f726715f3f458e0a8166c303f8f128e6`);
-                const data = await res.json();
-                const condicao = data.weather[0].main.toLowerCase();
-                if (condicao.includes('rain') || condicao.includes('drizzle')) {
-                    document.getElementById('chuva-aviso').classList.remove('hidden');
-                }
-            } catch (e) { console.log("Erro check chuva"); }
+        // Navegação
+        function goTo(id) {
+            document.querySelectorAll('.container > div:not(header)').forEach(el => el.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
         }
-        checkRain();
-
-        // Navegação e Firebase
-        function show(id) { document.querySelectorAll('.container > div').forEach(el => el.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
 
         function addCamposFilho() {
             const div = document.createElement('div');
+            div.className = "filho-grupo";
             div.innerHTML = `<input type="text" class="c-name" placeholder="NOME DO ALUNO"><input type="text" class="c-room" placeholder="SÉRIE / SALA">`;
             document.getElementById('lista-filhos').appendChild(div);
         }
 
+        // Envio dos Pais
         function processarEnvio() {
             const resp = document.getElementById('resp-name').value.trim().toUpperCase();
             const nomes = document.querySelectorAll('.c-name');
             const salas = document.querySelectorAll('.c-room');
-            if (!resp) return alert("INFORME SEU NOME!");
+            if (!resp) return alert("NOME DO RESPONSÁVEL OBRIGATÓRIO");
+
+            let enviou = false;
             nomes.forEach((n, i) => {
                 const nome = n.value.trim().toUpperCase();
                 if (nome) {
-                    db.ref('fila/').push({ aluno: nome, sala: salas[i].value.toUpperCase(), responsavel: resp, chegada: new Date().getTime(), status: 'aguardando' });
+                    db.ref('fila/').push({
+                        aluno: nome,
+                        sala: salas[i].value.toUpperCase(),
+                        responsavel: resp,
+                        chegada: new Date().getTime(),
+                        status: 'aguardando'
+                    });
+                    enviou = true;
                 }
             });
-            alert("Chamada enviada!");
-            location.reload();
+            if (enviou) { iniciarCronometro(); goTo('screen-status'); }
         }
 
+        function iniciarCronometro() {
+            const inicio = new Date();
+            setInterval(() => {
+                const diff = Math.floor((new Date() - inicio) / 1000);
+                const m = Math.floor(diff / 60).toString().padStart(2, '0');
+                const s = (diff % 60).toString().padStart(2, '0');
+                const el = document.getElementById('cronometro-pai');
+                if (el) el.innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        // Login Monitor
         function loginMonitor() {
-            if (document.getElementById('pass-school').value === 'escola') { show('screen-monitor'); escutarBanco(); }
+            if (document.getElementById('pass-school').value === 'escola') {
+                goTo('screen-monitor');
+                escutarBanco();
+            } else { alert("Senha incorreta"); }
         }
 
+        // Atualização da Fila e Tabela
         function escutarBanco() {
             db.ref('fila/').on('value', snapshot => {
                 const dados = snapshot.val();
-                const containerFila = document.getElementById('fila-monitor');
-                containerFila.innerHTML = "";
+                const filaContainer = document.getElementById('fila-monitor');
+                const entreguesContainer = document.getElementById('lista-entregues');
+
+                filaContainer.innerHTML = "";
+                entreguesContainer.innerHTML = "";
                 let count = 0;
+
                 if (dados) {
-                    Object.keys(dados).forEach(id => {
-                        const item = dados[id];
+                    // Converter para array para ordenar (mais recentes primeiro no histórico)
+                    const items = Object.keys(dados).map(key => ({ id: key, ...dados[key] }));
+
+                    items.reverse().forEach(item => {
                         if (item.status === 'aguardando') {
                             count++;
-                            containerFila.innerHTML += `<div class="fila-item"><div><strong>${item.aluno}</strong><br><small>${item.sala} | ${item.responsavel}</small></div><button class="btn-cheguei" style="width:auto; padding:10px;" onclick="darBaixa('${id}')">OK</button></div>`;
+                            // Cálculo de tempo de espera em tempo real para a fila
+                            const tempoEspera = Math.floor((new Date().getTime() - item.chegada) / 60000);
+
+                            filaContainer.innerHTML += `
+                            <div class="fila-item">
+                                <div>
+                                    <strong style="color:var(--primary)">${item.aluno}</strong>
+                                    <span class="timer-badge">${tempoEspera} min</span><br>
+                                    <small>${item.sala} | PAIS: ${item.responsavel}</small>
+                                </div>
+                                <button class="btn-cheguei" style="width:auto; padding:10px;" onclick="darBaixa('${item.id}', ${item.chegada})">LIBERAR</button>
+                            </div>`;
+                        } else {
+                            // Tabela de Alunos Entregues
+                            entreguesContainer.innerHTML += `
+                            <tr class="row-entregue">
+                                <td>${item.aluno}</td>
+                                <td>${item.sala}</td>
+                                <td>${item.responsavel}</td>
+                                <td>${item.horaSaida}</td>
+                                <td style="color:var(--warning)">${item.tempoTotal || '--'}</td>
+                            </tr>`;
                         }
                     });
                 }
@@ -316,9 +389,22 @@
             });
         }
 
-        function darBaixa(id) {
-            db.ref('fila/' + id).update({ status: 'entregue', horaSaida: new Date().toLocaleTimeString() });
+        function darBaixa(id, chegada) {
+            const agora = new Date().getTime();
+            const diff = Math.floor((agora - chegada) / 60000); // tempo em minutos
+            const tempoTotal = diff + " MIN";
+
+            db.ref('fila/' + id).update({
+                status: 'entregue',
+                horaSaida: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                tempoTotal: tempoTotal
+            });
         }
+
+        // Widget Clima
+        window.myWidgetParam ? window.myWidgetParam : window.myWidgetParam = [];
+        window.myWidgetParam.push({ id: 11, cityid: '3449333', appid: 'f726715f3f458e0a8166c303f8f128e6', units: 'metric', containerid: 'openweathermap-widget-11', });
+        (function () { var script = document.createElement('script'); script.async = true; script.charset = "utf-8"; script.src = "//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/weather-widget-generator.js"; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s); })();
     </script>
 </body>
 
