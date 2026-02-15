@@ -9,128 +9,109 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --primary: #00d4ff; --text: #f1f5f9; --success: #22c55e; --warning: #eab308; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; }
-        .container { max-width: 900px; margin: auto; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; min-height: 100vh; display: flex; flex-direction: column; }
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; }
         .hidden { display: none !important; }
         .card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
-        input { width: 100%; padding: 15px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; margin-bottom: 10px; box-sizing: border-box; font-size: 16px; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; text-transform: uppercase; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-primary { background: var(--primary); color: #000; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-dark { background: #334155; color: white; }
         
-        /* Câmera Estilo Banco */
-        .camera-container { position: relative; width: 100%; max-width: 400px; margin: auto; overflow: hidden; border-radius: 20px; border: 3px solid var(--primary); display: none; }
-        video { width: 100%; transform: scaleX(1); /* Sem espelhar */ }
-        .face-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 50px solid rgba(15, 23, 42, 0.7); border-radius: 50%; box-sizing: border-box; pointer-events: none; }
+        /* Cabeçalhos e Tabelas */
+        .table-header { display: grid; grid-template-columns: 2fr 1fr 2fr 1fr; gap: 10px; padding: 12px; background: #334155; font-weight: bold; border-radius: 8px 8px 0 0; font-size: 13px; color: var(--primary); }
+        .row-item { display: grid; grid-template-columns: 2fr 1fr 2fr 1fr; gap: 10px; align-items: center; padding: 12px; border-bottom: 1px solid #334155; font-size: 13px; }
+        
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; text-transform: uppercase; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-dark { background: #334155; color: white; }
 
-        .monitor-grid { display: grid; grid-template-columns: 2fr 1fr 0.8fr 1.5fr 1fr; gap: 10px; align-items: center; padding: 12px; border-bottom: 1px solid #334155; font-size: 13px; }
-        .timer { font-size: 45px; font-weight: bold; color: var(--warning); margin: 10px 0; }
-        .checkbox-row { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 14px; }
-        .checkbox-row input { width: auto; margin: 0; }
+        /* Modal Câmera Tela Cheia */
+        #camera-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #video-full { width: 100%; height: 100%; object-fit: cover; }
+        .overlay-face { position: absolute; width: 280px; height: 380px; border: 4px solid var(--primary); border-radius: 50%; box-shadow: 0 0 0 1000px rgba(0,0,0,0.6); pointer-events: none; }
+        
+        footer { text-align: center; padding: 20px; font-size: 10px; opacity: 0.4; letter-spacing: 2px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header style="text-align:center; padding: 10px;"><h1 style="color:var(--primary); font-size: 24px; letter-spacing: 2px;">EXITFLOW</h1></header>
+    <header style="text-align:center; padding: 20px;"><h1 style="color:var(--primary); font-size: 22px;">DÉCIO MACHADO GAIA</h1></header>
 
     <div id="screen-home">
-        <button class="btn btn-primary" onclick="goTo('screen-login-pai')"><i class="bi bi-people"></i> ÁREA DOS PAIS</button>
-        <button class="btn btn-dark" onclick="goTo('screen-login-monitor')"><i class="bi bi-display"></i> MONITORIA</button>
-        <button class="btn btn-dark" style="opacity:0.6" onclick="goTo('screen-login-diretoria')"><i class="bi bi-shield-lock"></i> DIRETORIA</button>
-    </div>
-
-    <div id="screen-login-diretoria" class="card hidden">
-        <input type="password" id="pass-dir" placeholder="SENHA DIRETORIA">
-        <button class="btn btn-success" onclick="checkPass('pass-dir', '1234', 'screen-adm')">ENTRAR</button>
-        <button class="btn btn-dark" onclick="goTo('screen-home')">VOLTAR</button>
-    </div>
-
-    <div id="screen-adm" class="card hidden">
-        <h3>CADASTRO E GESTÃO</h3>
-        <button class="btn btn-primary" onclick="downloadData('cadastros')"><i class="bi bi-file-earmark-excel"></i> DOWNLOAD LISTA DE PAIS</button>
-        <hr style="opacity:0.2; margin: 20px 0;">
-        <input type="number" id="reg-cpf" placeholder="CPF PAI">
-        <input type="text" id="reg-pai" placeholder="NOME COMPLETO PAI">
-        <div id="cont-filhos"><div class="card"><input type="text" class="reg-aluno" placeholder="NOME ALUNO"><input type="text" class="reg-serie" placeholder="SALA"></div></div>
-        <button class="btn btn-dark" onclick="addCampo()">+ FILHO</button>
-        
-        <div class="camera-container" id="cam-box">
-            <video id="video" autoplay playsinline></video>
-            <div class="face-overlay"></div>
-        </div>
-        
-        <button id="btn-camera" class="btn btn-primary" onclick="ligarCamera()"><i class="bi bi-camera"></i> ABRIR CÂMERA FACIAL</button>
-        <button id="btn-snap" class="btn btn-success hidden" onclick="capturar()"><i class="bi bi-record-circle"></i> CAPTURAR ROSTO</button>
-        <button class="btn btn-success" style="margin-top:20px" onclick="salvar()">SALVAR NO EXITFLOW</button>
-        <button class="btn btn-dark" onclick="goTo('screen-home')">VOLTAR</button>
+        <button class="btn btn-primary" onclick="goTo('screen-login-pai')">ÁREA DOS PAIS</button>
+        <button class="btn btn-dark" onclick="goTo('screen-login-monitor')">MONITORIA</button>
+        <button class="btn btn-dark" style="opacity:0.5" onclick="goTo('screen-login-diretoria')">DIRETORIA</button>
     </div>
 
     <div id="screen-login-monitor" class="card hidden">
-        <input type="password" id="pass-mon" placeholder="SENHA MONITOR">
-        <button class="btn btn-success" onclick="checkPass('pass-mon', 'escola', 'screen-monitor')">ENTRAR</button>
+        <input type="password" id="pass-mon" placeholder="SENHA MONITOR" style="width:100%; padding:15px; margin-bottom:10px; background:#0f172a; color:white; border:1px solid #334155; border-radius:8px;">
+        <button class="btn btn-success" onclick="checkPass('pass-mon', '1234', 'screen-monitor')">ENTRAR</button>
         <button class="btn btn-dark" onclick="goTo('screen-home')">VOLTAR</button>
     </div>
 
     <div id="screen-monitor" class="card hidden">
         <h3 style="color:var(--warning)">SAÍDA DE ALUNOS</h3>
+        <div class="table-header"><span>RESPONSÁVEL</span><span>SALA</span><span>ALUNO</span><span>AÇÃO</span></div>
         <div id="lista-monitor"></div>
         
-        <h3 style="color:var(--success); margin-top:25px;">HISTÓRICO DE SAÍDA</h3>
-        <button class="btn btn-primary" onclick="downloadData('saidas')"><i class="bi bi-download"></i> EXPORTAR SAÍDAS DE HOJE</button>
-        <div class="card" style="padding:0; margin-top:10px;"><table style="width:100%; font-size:12px;"><tbody id="lista-entregues"></tbody></table></div>
+        <h3 style="color:var(--success); margin-top:30px;">HISTÓRICO DE HOJE</h3>
+        <button class="btn btn-primary" onclick="downloadSaidas()" style="margin-bottom:10px;"><i class="bi bi-download"></i> EXPORTAR RELATÓRIO DE SAÍDAS</button>
+        <div class="table-header" style="background:#1e293b; color:var(--success)"><span>ALUNO</span><span>SALA</span><span>QUEM BUSCOU</span><span>HORA</span></div>
+        <div id="lista-entregues" class="card" style="padding:0; background:transparent; border:none;"></div>
         
-        <button class="btn btn-dark" style="margin-top:20px" onclick="location.reload()">SAIR</button>
+        <button class="btn btn-dark" onclick="location.reload()">SAIR</button>
     </div>
 
-    <div id="screen-login-pai" class="card hidden">
-        <input type="number" id="cpf-pai" placeholder="SEU CPF">
-        <div class="checkbox-row">
-            <input type="checkbox" id="remember-me"> <label for="remember-me">Lembrar meu CPF</label>
+    <div id="screen-adm" class="card hidden">
+        <h3>DIRETORIA - CADASTRO</h3>
+        <button class="btn btn-primary" onclick="downloadPais()"><i class="bi bi-download"></i> DOWNLOAD LISTA DE PAIS</button>
+        <hr style="opacity:0.1; margin:20px 0;">
+        <input type="number" id="reg-cpf" placeholder="CPF PAI" style="width:100%; padding:15px; margin-bottom:10px; background:#0f172a; color:white; border:1px solid #334155; border-radius:8px;">
+        <input type="text" id="reg-pai" placeholder="NOME COMPLETO PAI" style="width:100%; padding:15px; margin-bottom:10px; background:#0f172a; color:white; border:1px solid #334155; border-radius:8px;">
+        <div id="cont-filhos">
+            <div class="card" style="background:#0f172a"><input type="text" class="reg-aluno" placeholder="ALUNO" style="width:100%; background:transparent; border:none; color:white;"><input type="text" class="reg-serie" placeholder="SALA" style="width:100%; background:transparent; border:none; color:white;"></div>
         </div>
-        <button class="btn btn-success" onclick="loginPai()">ENTRAR</button>
-        <button id="btn-biometria" class="btn btn-primary hidden" onclick="loginBiometrico()"><i class="bi bi-fingerprint"></i> ENTRAR COM BIOMETRIA</button>
+        <button class="btn btn-dark" onclick="addCampo()">+ ADICIONAR FILHO</button>
+        <button class="btn btn-primary" onclick="abrirCameraFull()"><i class="bi bi-camera"></i> TIRAR FOTO DO RESPONSÁVEL</button>
+        <button class="btn btn-success" style="margin-top:20px" onclick="salvar()">FINALIZAR CADASTRO</button>
         <button class="btn btn-dark" onclick="goTo('screen-home')">VOLTAR</button>
     </div>
 
+    <div id="screen-login-pai" class="card hidden">
+        <input type="number" id="cpf-pai" placeholder="SEU CPF" style="width:100%; padding:15px; margin-bottom:10px; background:#0f172a; color:white; border:1px solid #334155; border-radius:8px;">
+        <button class="btn btn-success" onclick="loginPai()">ENTRAR</button>
+        <button class="btn btn-dark" onclick="goTo('screen-home')">VOLTAR</button>
+    </div>
+    
     <div id="screen-pai-home" class="card hidden" style="text-align:center;">
         <h2 id="nome-pai-logado"></h2>
-        <button id="btn-setup-bio" class="btn btn-dark" style="font-size: 11px;" onclick="cadastrarBiometria()">ATIVAR ACESSO POR DIGITAL</button>
-        <div id="lista-filhos-pai" style="color:var(--primary); font-weight:bold; margin:20px 0;"></div>
         <div id="area-chamar"><button class="btn btn-success" style="padding:25px" onclick="chamar()">ESTOU NO PORTÃO</button></div>
         <div id="waiting-area" class="hidden">
-            <div id="cont-cronometro"><div class="timer" id="cronometro">00:00</div></div>
-            <p id="status-msg">Aguarde a liberação...</p>
+            <div class="timer" id="cronometro" style="font-size:50px; color:var(--warning)">00:00</div>
+            <p id="status-msg">Aguarde a liberação do monitor...</p>
         </div>
         <button class="btn btn-dark" onclick="location.reload()" style="margin-top:30px">SAIR</button>
     </div>
+
 </div>
 
+<div id="camera-modal" class="hidden">
+    <video id="video-full" autoplay playsinline></video>
+    <div class="overlay-face"></div>
+    <div style="position:absolute; bottom:30px; display:flex; gap:10px; width:90%;">
+        <button class="btn btn-dark" onclick="fecharCamera()">CANCELAR</button>
+        <button class="btn btn-success" onclick="capturarFull()">TIRAR FOTO</button>
+    </div>
+</div>
+
+<footer>EXITFLOW</footer>
+
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBDdVksMaItsqib7g2wIye78q70q0KK3fk",
-        authDomain: "saidagaia.firebaseapp.com",
-        databaseURL: "https://saidagaia-default-rtdb.firebaseio.com",
-        projectId: "saidagaia",
-        storageBucket: "saidagaia.firebasestorage.app",
-        messagingSenderId: "711059544383",
-        appId: "1:711059544383:web:217491ab4525a083709b8a"
-    };
+    // CONFIGURAÇÃO FIREBASE (Igual a sua)
+    const firebaseConfig = { apiKey: "AIzaSyBDdVksMaItsqib7g2wIye78q70q0KK3fk", authDomain: "saidagaia.firebaseapp.com", databaseURL: "https://saidagaia-default-rtdb.firebaseio.com", projectId: "saidagaia", storageBucket: "saidagaia.firebasestorage.app", messagingSenderId: "711059544383", appId: "1:711059544383:web:217491ab4525a083709b8a" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let userPai = null, localStream = null, fotoBase64 = null, timerInterval = null;
-
-    // Carregar CPF Salvo
-    window.onload = () => {
-        const salvo = localStorage.getItem('exitflow_cpf');
-        if(salvo) {
-            document.getElementById('cpf-pai').value = salvo;
-            document.getElementById('remember-me').checked = true;
-            if(localStorage.getItem('exitflow_bio')) document.getElementById('btn-biometria').classList.remove('hidden');
-        }
-    };
+    let userPai = null, streamFull = null, fotoBase64 = null;
 
     function goTo(id){
         document.querySelectorAll('.container > div:not(header)').forEach(e => e.classList.add('hidden'));
@@ -142,104 +123,56 @@
         if(document.getElementById(inputId).value === senha) goTo(tela); else alert("Senha incorreta");
     }
 
-    // DOWNLOAD EXCEL REAL
-    function downloadData(tipo) {
-        const ref = tipo === 'cadastros' ? db.ref('cadastros/') : db.ref('fila/').orderByChild('data').equalTo(new Date().toLocaleDateString().replace(/\//g, '-'));
-        ref.once('value', s => {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            if(tipo === 'cadastros') {
-                csvContent += "PAI;CPF;FILHOS\n";
-                s.forEach(p => csvContent += `${p.val().responsavel};${p.key};${p.val().filhos.map(f=>f.nome).join("|")}\n`);
-            } else {
-                csvContent += "ALUNO;SALA;HORA SAIDA\n";
-                s.forEach(p => { if(p.val().status === 'entregue') csvContent += `${p.val().aluno};${p.val().serie};${p.val().saida}\n` });
-            }
-            const encodedUri = encodeURI(csvContent);
+    // LÓGICA CÂMERA FULL
+    async function abrirCameraFull(){
+        document.getElementById('camera-modal').classList.remove('hidden');
+        streamFull = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}});
+        document.getElementById('video-full').srcObject = streamFull;
+    }
+    function fecharCamera(){
+        if(streamFull) streamFull.getTracks().forEach(t => t.stop());
+        document.getElementById('camera-modal').classList.add('hidden');
+    }
+    function capturarFull(){
+        const v = document.getElementById('video-full');
+        const c = document.createElement('canvas');
+        c.width = v.videoVideoWidth || 640; c.height = v.videoVideoHeight || 480;
+        c.getContext('2d').drawImage(v, 0, 0);
+        fotoBase64 = c.toDataURL('image/jpeg', 0.7);
+        fecharCamera();
+        alert("Foto capturada com sucesso!");
+    }
+
+    // DOWNLOADS COM SEGURANÇA (Adicionado quem buscou)
+    function downloadSaidas() {
+        const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
+        db.ref('fila/').orderByChild('data').equalTo(hoje).once('value', s => {
+            let csv = "ALUNO;SALA;RESPONSAVEL (QUEM BUSCOU);CPF;HORA SAIDA\n";
+            s.forEach(p => {
+                const d = p.val();
+                if(d.status === 'entregue') csv += `${d.aluno};${d.serie};${d.responsavel};${d.cpf};${d.saida}\n`;
+            });
+            const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `exitflow_${tipo}.csv`);
-            document.body.appendChild(link);
+            link.href = URL.createObjectURL(blob);
+            link.download = `Saidas_ExitFlow_${hoje}.csv`;
             link.click();
         });
     }
 
-    // CÂMERA FACIAL
-    async function ligarCamera(){
-        localStream = await navigator.mediaDevices.getUserMedia({video:{ facingMode: "user" }});
-        document.getElementById('video').srcObject = localStream;
-        document.getElementById('cam-box').style.display = 'block';
-        document.getElementById('btn-camera').classList.add('hidden');
-        document.getElementById('btn-snap').classList.remove('hidden');
-    }
-    function capturar(){
-        const v = document.getElementById('video');
-        const c = document.createElement('canvas');
-        c.width = v.videoWidth; c.height = v.videoHeight;
-        c.getContext('2d').drawImage(v, 0, 0);
-        fotoBase64 = c.toDataURL('image/jpeg', 0.6);
-        localStream.getTracks().forEach(t => t.stop());
-        document.getElementById('cam-box').style.display = 'none';
-        document.getElementById('btn-snap').classList.add('hidden');
-        document.getElementById('btn-camera').classList.remove('hidden');
-        document.getElementById('btn-camera').innerText = "ROSTO CAPTURADO ✅";
-    }
-
-    function salvar(){
-        const cpf = document.getElementById('reg-cpf').value;
-        const pai = document.getElementById('reg-pai').value.toUpperCase();
-        const alunos = document.querySelectorAll('.reg-aluno'), series = document.querySelectorAll('.reg-serie');
-        let filhos = []; alunos.forEach((n, i) => { if(n.value) filhos.push({nome: n.value.toUpperCase(), serie: series[i].value.toUpperCase()}); });
-        if(!cpf || !fotoBase64) return alert("Preencha tudo e tire a foto!");
-        db.ref('cadastros/' + cpf).set({responsavel: pai, filhos, foto: fotoBase64}).then(()=>location.reload());
-    }
-
-    // LOGIN E BIOMETRIA
-    function loginPai(){
-        const cpf = document.getElementById('cpf-pai').value;
-        const remember = document.getElementById('remember-me').checked;
-        db.ref('cadastros/' + cpf).once('value', s => {
-            if(s.exists()){
-                if(remember) localStorage.setItem('exitflow_cpf', cpf); else localStorage.removeItem('exitflow_cpf');
-                userPai = s.val(); userPai.cpf = cpf;
-                document.getElementById('nome-pai-logado').innerText = userPai.responsavel;
-                document.getElementById('lista-filhos-pai').innerText = userPai.filhos.map(f => `${f.nome} (${f.serie})`).join(' / ');
-                goTo('screen-pai-home');
-            } else alert("CPF não encontrado.");
+    function downloadPais() {
+        db.ref('cadastros/').once('value', s => {
+            let csv = "RESPONSAVEL;CPF;FILHOS\n";
+            s.forEach(p => csv += `${p.val().responsavel};${p.key};${p.val().filhos.map(f=>f.nome).join("|")}\n`);
+            const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Lista_Pais_ExitFlow.csv";
+            link.click();
         });
     }
 
-    async function cadastrarBiometria() {
-        alert("Simulando registro de biometria facial/digital no dispositivo...");
-        localStorage.setItem('exitflow_bio', userPai.cpf);
-        alert("Biometria ativada para este aparelho!");
-    }
-
-    function loginBiometrico() {
-        const cpfBio = localStorage.getItem('exitflow_bio');
-        if(cpfBio) {
-            document.getElementById('cpf-pai').value = cpfBio;
-            loginPai();
-        }
-    }
-
-    function chamar(){
-        const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
-        userPai.filhos.forEach(f => {
-            const ref = db.ref('fila/').push();
-            ref.set({aluno: f.nome, serie: f.serie, responsavel: userPai.responsavel, cpf: userPai.cpf, foto: userPai.foto, status: 'aguardando', timestamp: Date.now(), data: hoje});
-            ref.on('value', s => {
-                if(s.val() && s.val().status === 'entregue'){
-                    clearInterval(timerInterval);
-                    document.getElementById('cont-cronometro').classList.add('hidden');
-                    document.getElementById('status-msg').innerHTML = "<b style='color:var(--success); font-size:24px;'>ALUNO ENTREGUE!<br>Obrigado.</b>";
-                }
-            });
-        });
-        document.getElementById('area-chamar').classList.add('hidden');
-        document.getElementById('waiting-area').classList.remove('hidden');
-        let seg = 0; timerInterval = setInterval(() => { seg++; document.getElementById('cronometro').innerText = Math.floor(seg/60).toString().padStart(2,'0') + ":" + (seg%60).toString().padStart(2,'0'); }, 1000);
-    }
-
+    // MONITORIA
     function initMonitor(){
         const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
         db.ref('fila/').orderByChild('data').equalTo(hoje).on('value', snap => {
@@ -247,15 +180,60 @@
             const entregues = document.getElementById('lista-entregues');
             const dados = snap.val() || {};
             espera.innerHTML = ""; entregues.innerHTML = "";
+            
             Object.keys(dados).reverse().forEach(id => {
                 const item = dados[id];
                 if(item.status === 'aguardando'){
-                    espera.innerHTML += `<div class="monitor-grid card"><span>${item.responsavel}</span><span>${item.serie}</span><span><b>${item.aluno}</b></span><button class="btn-success" style="padding:5px" onclick="db.ref('fila/${id}').update({status:'entregue', saida:new Date().toLocaleTimeString()})">OK</button></div>`;
+                    espera.innerHTML += `
+                    <div class="row-item" style="background:rgba(255,255,255,0.05); margin-bottom:5px; border-radius:8px;">
+                        <span>${item.responsavel}</span><span>${item.serie}</span><span><b>${item.aluno}</b></span>
+                        <button class="btn-success" style="padding:8px" onclick="liberar('${id}')">OK</button>
+                    </div>`;
                 } else {
-                    entregues.innerHTML += `<tr><td style="padding:8px;">${item.aluno}</td><td style="text-align:right;">${item.saida}</td></tr>`;
+                    entregues.innerHTML += `
+                    <div class="row-item">
+                        <span>${item.aluno}</span><span>${item.serie}</span><span>${item.responsavel}</span><span>${item.saida}</span>
+                    </div>`;
                 }
             });
         });
+    }
+
+    function liberar(id){
+        db.ref('fila/' + id).update({status: 'entregue', saida: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})});
+    }
+
+    // CADASTRO E LOGIN (SISTEMA EXITFLOW)
+    function addCampo(){ document.getElementById('cont-filhos').insertAdjacentHTML('beforeend', '<div class="card" style="background:#0f172a; margin-top:5px;"><input type="text" class="reg-aluno" placeholder="ALUNO" style="width:100%; background:transparent; border:none; color:white;"><input type="text" class="reg-serie" placeholder="SALA" style="width:100%; background:transparent; border:none; color:white;"></div>'); }
+    function salvar(){
+        const cpf = document.getElementById('reg-cpf').value;
+        const pai = document.getElementById('reg-pai').value.toUpperCase();
+        const alunos = document.querySelectorAll('.reg-aluno'), series = document.querySelectorAll('.reg-serie');
+        let filhos = []; alunos.forEach((n, i) => { if(n.value) filhos.push({nome: n.value.toUpperCase(), serie: series[i].value.toUpperCase()}); });
+        if(!cpf || !fotoBase64) return alert("CPF e Foto são obrigatórios!");
+        db.ref('cadastros/' + cpf).set({responsavel: pai, filhos, foto: fotoBase64}).then(()=>location.reload());
+    }
+
+    function loginPai(){
+        const cpf = document.getElementById('cpf-pai').value;
+        db.ref('cadastros/' + cpf).once('value', s => {
+            if(s.exists()){
+                userPai = s.val(); userPai.cpf = cpf;
+                goTo('screen-pai-home');
+                document.getElementById('nome-pai-logado').innerText = userPai.responsavel;
+            } else alert("Cadastro não encontrado.");
+        });
+    }
+
+    function chamar(){
+        const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
+        userPai.filhos.forEach(f => {
+            const ref = db.ref('fila/').push();
+            ref.set({aluno: f.nome, serie: f.serie, responsavel: userPai.responsavel, cpf: userPai.cpf, status: 'aguardando', timestamp: Date.now(), data: hoje});
+            ref.on('value', s => { if(s.val() && s.val().status === 'entregue') document.getElementById('status-msg').innerHTML = "<b style='color:var(--success)'>ENTREGUE! OBRIGADO.</b>"; });
+        });
+        document.getElementById('area-chamar').classList.add('hidden');
+        document.getElementById('waiting-area').classList.remove('hidden');
     }
 </script>
 </body>
