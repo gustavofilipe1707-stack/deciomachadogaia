@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMG - Gestão Escolar</title>
+    <title>DMG - Gestão de Saída</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -13,83 +13,85 @@
         .container { max-width: 600px; margin: auto; }
         .hidden { display: none !important; }
         .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
-        input { width: 100%; padding: 15px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; margin-bottom: 10px; box-sizing: border-box; }
+        input { width: 100%; padding: 15px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; margin-bottom: 10px; box-sizing: border-box; font-size: 16px; }
         .btn { width: 100%; padding: 18px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; margin-bottom: 10px; }
         .btn-success { background: var(--success); color: white; }
         .btn-primary { background: var(--primary); color: #000; }
         .btn-dark { background: #334155; color: white; }
-        video, canvas { width: 100%; border-radius: 10px; background: #000; margin-bottom: 10px; }
-        .foto-preview { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .filho-row { border-top: 1px solid #334155; padding-top: 10px; margin-top: 10px; }
+        video, canvas, #photo-preview { width: 100%; border-radius: 10px; background: #000; margin-bottom: 10px; }
+        .monitor-card { display: flex; align-items: center; gap: 15px; border-left: 6px solid var(--warning); padding: 15px; }
+        .monitor-foto { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; border: 2px solid var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header style="text-align:center; padding: 20px 0;">
-        <h1 style="color:var(--primary); margin:0;">DÉCIO MACHADO GAIA</h1>
+        <h1 style="color:var(--primary); margin:0; font-size: 24px;">DÉCIO MACHADO GAIA</h1>
     </header>
 
     <div id="screen-home">
         <button class="btn btn-primary" onclick="goTo('screen-login-pai')"><i class="bi bi-people-fill"></i> ÁREA DOS PAIS</button>
         <button class="btn btn-dark" onclick="goTo('screen-login-school')"><i class="bi bi-mortarboard-fill"></i> MONITORIA</button>
-        <button class="btn btn-dark" style="opacity:0.6" onclick="goTo('screen-login-diretoria')"><i class="bi bi-shield-lock-fill"></i> DIRETORIA</button>
+        <button class="btn btn-dark" style="opacity:0.5" onclick="goTo('screen-login-diretoria')"><i class="bi bi-shield-lock-fill"></i> DIRETORIA</button>
     </div>
 
     <div id="screen-login-diretoria" class="card hidden">
         <h3>ACESSO DIRETORIA</h3>
-        <input type="password" id="pass-diretoria" placeholder="SENHA DE ACESSO">
-        <button class="btn btn-success" onclick="loginDiretoria()">ENTRAR</button>
+        <input type="password" id="pass-diretoria" placeholder="SENHA">
+        <button class="btn btn-success" onclick="if(document.getElementById('pass-diretoria').value==='1234') goTo('screen-panel-diretoria'); else alert('Erro!');">ENTRAR</button>
         <button class="btn btn-dark" onclick="goTo('screen-home')">VOLTAR</button>
     </div>
 
     <div id="screen-panel-diretoria" class="card hidden">
-        <h3 style="color:var(--primary)">CADASTRO DE RESPONSÁVEL</h3>
-        <input type="number" id="reg-cpf" placeholder="CPF DO PAI (LOGIN)">
+        <h3 style="color:var(--primary)">CADASTRO DIRETORIA</h3>
+        <input type="number" id="reg-cpf" placeholder="CPF DO RESPONSÁVEL (LOGIN)">
         <input type="text" id="reg-nome-pai" placeholder="NOME DO RESPONSÁVEL">
-        
         <div id="container-filhos">
-            <div class="filho-row">
+            <div class="card" style="padding:10px; background: rgba(0,0,0,0.2)">
                 <input type="text" class="reg-aluno" placeholder="NOME DO ALUNO">
-                <input type="text" class="reg-serie" placeholder="SÉRIE (Ex: 4ºA)">
+                <input type="text" class="reg-serie" placeholder="SÉRIE (EX: 4A)">
             </div>
         </div>
-        <button class="btn btn-dark" style="padding:10px; font-size:12px;" onclick="addFilhoCampo()">+ ADICIONAR FILHO</button>
-
-        <h4 style="margin-top:20px;">FOTO DO RESPONSÁVEL</h4>
+        <button class="btn btn-dark" style="padding:10px; margin-bottom:20px;" onclick="addFilhoCampo()">+ FILHO</button>
+        
         <video id="video" autoplay playsinline></video>
-        <canvas id="canvas" class="hidden"></canvas>
-        <img id="photo-preview" class="hidden" style="width:100%; border-radius:10px; margin-bottom:10px;">
-        <button id="btn-snap" class="btn btn-primary" onclick="takePhoto()">TIRAR FOTO</button>
-
-        <button class="btn btn-success" onclick="salvarCadastro()">FINALIZAR CADASTRO</button>
-        <button class="btn btn-dark" onclick="location.reload()">SAIR</button>
+        <img id="photo-preview" class="hidden">
+        <button id="btn-snap" class="btn btn-primary" onclick="takePhoto()">CAPTURAR FOTO</button>
+        
+        <button class="btn btn-success" onclick="salvarCadastro()">SALVAR TUDO</button>
+        <button class="btn btn-dark" onclick="location.reload()">CANCELAR</button>
     </div>
 
     <div id="screen-login-pai" class="card hidden">
-        <h3>IDENTIFICAÇÃO</h3>
+        <h3>LOGIN RESPONSÁVEL</h3>
         <input type="number" id="cpf-login" placeholder="DIGITE SEU CPF">
         <button class="btn btn-success" onclick="authPai()">VERIFICAR</button>
         <button class="btn btn-dark" onclick="goTo('screen-home')">VOLTAR</button>
     </div>
 
     <div id="screen-chamada" class="card hidden" style="text-align:center;">
-        <img id="display-foto-pai" style="width:120px; height:120px; border-radius:60px; object-fit:cover; border:3px solid var(--primary);">
-        <h3 id="display-nome-pai"></h3>
-        <div id="display-filhos" style="margin-bottom:20px; font-style:italic;"></div>
-        <button class="btn btn-success" onclick="enviarChamada()">ESTOU NO PORTÃO</button>
+        <img id="display-foto-pai" style="width:150px; height:150px; border-radius:75px; object-fit:cover; border:4px solid var(--primary); margin-bottom:15px;">
+        <h2 id="display-nome-pai" style="margin:0"></h2>
+        <div id="display-filhos" style="margin:15px 0; color:var(--primary); font-weight:bold;"></div>
+        <button class="btn btn-success" onclick="enviarChamada()">CHAMAR AGORA</button>
+        <button class="btn btn-dark" onclick="location.reload()">SAIR</button>
+    </div>
+
+    <div id="screen-login-school" class="card hidden">
+        <h3>LOGIN MONITORIA</h3>
+        <input type="password" id="pass-monitor" placeholder="SENHA">
+        <button class="btn btn-success" onclick="if(document.getElementById('pass-monitor').value==='escola') { goTo('screen-monitor'); listenFila(); } else alert('Erro!');">ENTRAR</button>
     </div>
 
     <div id="screen-monitor" class="card hidden">
-        <h2 style="color:var(--warning)">FILA DE SAÍDA</h2>
+        <h2 style="color:var(--warning); text-align:center;">FILA DE RETIRADA</h2>
         <div id="fila-lista"></div>
         <button class="btn btn-dark" onclick="location.reload()">VOLTAR</button>
     </div>
-
 </div>
 
 <script>
-    // CONFIGURAÇÃO FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyBDdVksMaItsqib7g2wIye78q70q0KK3fk",
         authDomain: "saidagaia.firebaseapp.com",
@@ -102,9 +104,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let streamVideo;
     let fotoData = null;
-    let dadosPaiLogado = null;
+    let dadosPai = null;
 
     function goTo(id) {
         document.querySelectorAll('.container > div:not(header)').forEach(el => el.classList.add('hidden'));
@@ -112,120 +113,92 @@
         if(id === 'screen-panel-diretoria') startCamera();
     }
 
-    // --- DIRETORIA ---
-    function loginDiretoria() {
-        if(document.getElementById('pass-diretoria').value === '1234') {
-            goTo('screen-panel-diretoria');
-        } else { alert("Senha Incorreta!"); }
-    }
-
     async function startCamera() {
-        streamVideo = await navigator.mediaDevices.getUserMedia({ video: true });
-        document.getElementById('video').srcObject = streamVideo;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            document.getElementById('video').srcObject = stream;
+        } catch (e) { alert("Câmera não disponível"); }
     }
 
     function takePhoto() {
-        const canvas = document.getElementById('canvas');
         const video = document.getElementById('video');
+        const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0);
-        fotoData = canvas.toDataURL('image/jpeg');
+        fotoData = canvas.toDataURL('image/jpeg', 0.7);
         document.getElementById('photo-preview').src = fotoData;
         document.getElementById('photo-preview').classList.remove('hidden');
         video.classList.add('hidden');
-        document.getElementById('btn-snap').innerText = "TIRAR OUTRA";
     }
 
     function addFilhoCampo() {
-        const div = document.createElement('div');
-        div.className = 'filho-row';
-        div.innerHTML = `<input type="text" class="reg-aluno" placeholder="NOME DO ALUNO"><input type="text" class="reg-serie" placeholder="SÉRIE">`;
-        document.getElementById('container-filhos').appendChild(div);
+        const html = `<div class="card" style="padding:10px; background: rgba(0,0,0,0.2)"><input type="text" class="reg-aluno" placeholder="NOME DO ALUNO"><input type="text" class="reg-serie" placeholder="SÉRIE"></div>`;
+        document.getElementById('container-filhos').insertAdjacentHTML('beforeend', html);
     }
 
     function salvarCadastro() {
         const cpf = document.getElementById('reg-cpf').value;
         const nomePai = document.getElementById('reg-nome-pai').value.toUpperCase();
-        const nomesAlunos = document.querySelectorAll('.reg-aluno');
-        const seriesAlunos = document.querySelectorAll('.reg-serie');
-
+        const alunos = document.querySelectorAll('.reg-aluno');
+        const series = document.querySelectorAll('.reg-serie');
         let filhos = [];
-        nomesAlunos.forEach((n, i) => {
-            if(n.value) filhos.push({ nome: n.value.toUpperCase(), serie: seriesAlunos[i].value.toUpperCase() });
-        });
+        alunos.forEach((n, i) => { if(n.value) filhos.push({ nome: n.value.toUpperCase(), serie: series[i].value.toUpperCase() }); });
 
-        if(!cpf || !fotoData) return alert("CPF e Foto são obrigatórios!");
+        if(!cpf || !fotoData) return alert("Preencha CPF e tire a foto!");
 
-        db.ref('cadastros/' + cpf).set({
-            cpf_pai: cpf,
-            responsavel: nomePai,
-            filhos: filhos,
-            foto: fotoData
-        }).then(() => {
-            alert("Cadastro realizado com sucesso!");
-            location.reload();
-        });
+        db.ref('cadastros/' + cpf).set({ responsavel: nomePai, filhos, foto: fotoData })
+        .then(() => { alert("Sucesso!"); location.reload(); });
     }
 
-    // --- PAIS ---
     function authPai() {
         const cpf = document.getElementById('cpf-login').value;
         db.ref('cadastros/' + cpf).once('value', snap => {
             if(snap.exists()) {
-                dadosPaiLogado = snap.val();
-                document.getElementById('display-foto-pai').src = dadosPaiLogado.foto;
-                document.getElementById('display-nome-pai').innerText = dadosPaiLogado.responsavel;
-                document.getElementById('display-filhos').innerText = "Filhos: " + dadosPaiLogado.filhos.map(f => f.nome).join(', ');
+                dadosPai = snap.val();
+                document.getElementById('display-foto-pai').src = dadosPai.foto;
+                document.getElementById('display-nome-pai').innerText = dadosPai.responsavel;
+                document.getElementById('display-filhos').innerText = "Filhos: " + dadosPai.filhos.map(f => f.nome).join(' / ');
                 goTo('screen-chamada');
-            } else { alert("CPF não localizado!"); }
+            } else alert("CPF não cadastrado!");
         });
     }
 
     function enviarChamada() {
-        dadosPaiLogado.filhos.forEach(f => {
+        dadosPai.filhos.forEach(f => {
             db.ref('fila/').push({
-                aluno: f.nome,
-                serie: f.serie,
-                responsavel: dadosPaiLogado.responsavel,
-                foto: dadosPaiLogado.foto,
-                hora: new Date().toLocaleTimeString(),
-                status: 'aguardando'
+                aluno: f.nome, serie: f.serie, responsavel: dadosPai.responsavel,
+                foto: dadosPai.foto, status: 'aguardando', hora: new Date().toLocaleTimeString()
             });
         });
-        alert("Aviso enviado! Aguarde no portão.");
+        alert("Monitor avisado!");
         location.reload();
     }
-
-    // --- MONITORIA ---
-    function loginMonitor() { /* Implementar senha se quiser */ goTo('screen-monitor'); listenFila(); }
 
     function listenFila() {
         db.ref('fila/').on('value', snap => {
             const container = document.getElementById('fila-lista');
             container.innerHTML = "";
             const dados = snap.val();
-            if(dados) {
-                Object.keys(dados).forEach(id => {
-                    const item = dados[id];
-                    if(item.status === 'aguardando') {
-                        container.innerHTML += `
-                        <div class="card" style="display:flex; align-items:center; gap:15px; border-left:5px solid var(--warning)">
-                            <img src="${item.foto}" style="width:70px; height:70px; border-radius:10px; object-fit:cover;">
+            if(!dados) return;
+            Object.keys(dados).forEach(id => {
+                const item = dados[id];
+                if(item.status === 'aguardando') {
+                    container.innerHTML += `
+                        <div class="card monitor-card">
+                            <img src="${item.foto}" class="monitor-foto">
                             <div style="flex:1">
-                                <b style="color:var(--primary)">${item.aluno}</b> (${item.serie})<br>
-                                <small>Pai: ${item.responsavel}</small>
+                                <b style="color:var(--primary); font-size:18px;">${item.aluno}</b><br>
+                                <small>${item.serie} | Pai: ${item.responsavel}</small>
                             </div>
                             <button class="btn btn-success" style="width:auto; padding:10px;" onclick="darBaixa('${id}')">OK</button>
                         </div>`;
-                    }
-                });
-            }
+                }
+            });
         });
     }
 
     function darBaixa(id) { db.ref('fila/' + id).update({ status: 'entregue' }); }
-
 </script>
 </body>
 </html>
