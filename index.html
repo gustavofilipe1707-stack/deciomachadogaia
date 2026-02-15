@@ -3,93 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMG - Saída Escolar</title>
+    <title>DMG - Gestão Escolar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --primary: #00d4ff; --text: #f1f5f9; --success: #22c55e; --warning: #eab308; --danger: #ef4444; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; min-height: 100vh; }
-        .container { max-width: 800px; margin: auto; width: 100%; }
+        :root { --bg: #0f172a; --card: #1e293b; --primary: #00d4ff; --text: #f1f5f9; --success: #22c55e; --warning: #eab308; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; }
+        .container { max-width: 600px; margin: auto; }
         .hidden { display: none !important; }
-        header { text-align: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 20px; }
-        header h1 { font-size: 20px; color: var(--primary); margin: 5px 0; text-transform: uppercase; font-weight: 800; }
-        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
-        input { width: 100%; padding: 18px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; margin-bottom: 12px; font-size: 18px; text-align: center; box-sizing: border-box; }
-        .btn-cheguei { width: 100%; padding: 18px; background: var(--success); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        .btn-cheguei:active { transform: scale(0.98); }
-        .btn-access { width: 100%; padding: 20px; border-radius: 12px; border: 1px solid #334155; background: var(--card); color: white; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 12px; }
-        .btn-voltar { background: #334155; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; margin-top: 10px; font-weight: bold; text-transform: uppercase; }
-        .fila-item { background: #0a0f1d; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
-        .resumo-filhos { background: rgba(0, 212, 255, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--primary); text-align: left; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; text-transform: uppercase; margin-top: 10px; }
-        th { text-align: left; color: var(--primary); padding: 8px; border-bottom: 2px solid #334155; }
-        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        input { width: 100%; padding: 15px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; margin-bottom: 10px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 18px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; margin-bottom: 10px; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-dark { background: #334155; color: white; }
+        video, canvas { width: 100%; border-radius: 10px; background: #000; margin-bottom: 10px; }
+        .foto-preview { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .filho-row { border-top: 1px solid #334155; padding-top: 10px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header>
-        <h1>DÉCIO MACHADO GAIA</h1>
-        <p style="font-size:12px; opacity:0.7">Sistema de Saída Monitorada</p>
+    <header style="text-align:center; padding: 20px 0;">
+        <h1 style="color:var(--primary); margin:0;">DÉCIO MACHADO GAIA</h1>
     </header>
 
     <div id="screen-home">
-        <button class="btn-access" onclick="goTo('screen-login-pai')"><i class="bi bi-people-fill"></i> ÁREA DOS PAIS</button>
-        <button class="btn-access" onclick="goTo('screen-login-school')"><i class="bi bi-mortarboard-fill"></i> MONITORIA ESCOLA</button>
+        <button class="btn btn-primary" onclick="goTo('screen-login-pai')"><i class="bi bi-people-fill"></i> ÁREA DOS PAIS</button>
+        <button class="btn btn-dark" onclick="goTo('screen-login-school')"><i class="bi bi-mortarboard-fill"></i> MONITORIA</button>
+        <button class="btn btn-dark" style="opacity:0.6" onclick="goTo('screen-login-diretoria')"><i class="bi bi-shield-lock-fill"></i> DIRETORIA</button>
+    </div>
+
+    <div id="screen-login-diretoria" class="card hidden">
+        <h3>ACESSO DIRETORIA</h3>
+        <input type="password" id="pass-diretoria" placeholder="SENHA DE ACESSO">
+        <button class="btn btn-success" onclick="loginDiretoria()">ENTRAR</button>
+        <button class="btn btn-dark" onclick="goTo('screen-home')">VOLTAR</button>
+    </div>
+
+    <div id="screen-panel-diretoria" class="card hidden">
+        <h3 style="color:var(--primary)">CADASTRO DE RESPONSÁVEL</h3>
+        <input type="number" id="reg-cpf" placeholder="CPF DO PAI (LOGIN)">
+        <input type="text" id="reg-nome-pai" placeholder="NOME DO RESPONSÁVEL">
+        
+        <div id="container-filhos">
+            <div class="filho-row">
+                <input type="text" class="reg-aluno" placeholder="NOME DO ALUNO">
+                <input type="text" class="reg-serie" placeholder="SÉRIE (Ex: 4ºA)">
+            </div>
+        </div>
+        <button class="btn btn-dark" style="padding:10px; font-size:12px;" onclick="addFilhoCampo()">+ ADICIONAR FILHO</button>
+
+        <h4 style="margin-top:20px;">FOTO DO RESPONSÁVEL</h4>
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas" class="hidden"></canvas>
+        <img id="photo-preview" class="hidden" style="width:100%; border-radius:10px; margin-bottom:10px;">
+        <button id="btn-snap" class="btn btn-primary" onclick="takePhoto()">TIRAR FOTO</button>
+
+        <button class="btn btn-success" onclick="salvarCadastro()">FINALIZAR CADASTRO</button>
+        <button class="btn btn-dark" onclick="location.reload()">SAIR</button>
     </div>
 
     <div id="screen-login-pai" class="card hidden">
-        <h3 style="text-align:center">IDENTIFICAÇÃO</h3>
-        <input type="number" id="cpf-input" placeholder="DIGITE SEU CPF">
-        <button class="btn-cheguei" onclick="validarCPF()">BUSCAR ALUNOS</button>
-        <button class="btn-voltar" onclick="goTo('screen-home')">VOLTAR</button>
+        <h3>IDENTIFICAÇÃO</h3>
+        <input type="number" id="cpf-login" placeholder="DIGITE SEU CPF">
+        <button class="btn btn-success" onclick="authPai()">VERIFICAR</button>
+        <button class="btn btn-dark" onclick="goTo('screen-home')">VOLTAR</button>
     </div>
 
-    <div id="screen-confirmar" class="card hidden">
-        <h3 style="text-align:center">ALUNOS ENCONTRADOS:</h3>
-        <div id="lista-filhos-vinculados" class="resumo-filhos"></div>
-        <button class="btn-cheguei" onclick="enviarChamadaMultipla()">ESTOU NO PORTÃO</button>
-        <button class="btn-voltar" onclick="location.reload()">CANCELAR</button>
-    </div>
-
-    <div id="screen-status" class="card hidden" style="text-align:center;">
-        <div id="status-waiting">
-            <h3 style="color:var(--warning)">AGUARDANDO LIBERAÇÃO...</h3>
-            <div id="cronometro-pai" style="font-size: 50px; font-weight: 800; margin: 20px 0;">00:00</div>
-        </div>
-        <div id="status-finished" class="hidden">
-            <i class="bi bi-check-circle-fill" style="font-size: 60px; color: var(--success);"></i>
-            <h2 style="color:var(--success)">LIBERADO!</h2>
-            <p>Obrigado por esperar e boa viagem.</p>
-        </div>
-        <button class="btn-voltar" onclick="location.reload()">INÍCIO</button>
+    <div id="screen-chamada" class="card hidden" style="text-align:center;">
+        <img id="display-foto-pai" style="width:120px; height:120px; border-radius:60px; object-fit:cover; border:3px solid var(--primary);">
+        <h3 id="display-nome-pai"></h3>
+        <div id="display-filhos" style="margin-bottom:20px; font-style:italic;"></div>
+        <button class="btn btn-success" onclick="enviarChamada()">ESTOU NO PORTÃO</button>
     </div>
 
     <div id="screen-monitor" class="card hidden">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2>FILA ATUAL</h2>
-            <span id="badge-total" style="background:var(--primary); color:#000; padding:2px 12px; border-radius:15px; font-weight:bold;">0</span>
-        </div>
-        <div id="fila-monitor" style="margin-top:15px;"></div>
-        <h3 style="margin-top:25px; border-top: 1px solid #444; padding-top:10px; font-size:14px;">HISTÓRICO DE SAÍDAS</h3>
-        <div style="overflow-x:auto;">
-            <table>
-                <thead><tr><th>ALUNO</th><th>SALA</th><th>HORA</th><th>ESPERA</th></tr></thead>
-                <tbody id="lista-entregues"></tbody>
-            </table>
-        </div>
-        <button class="btn-voltar" onclick="location.reload()">SAIR</button>
+        <h2 style="color:var(--warning)">FILA DE SAÍDA</h2>
+        <div id="fila-lista"></div>
+        <button class="btn btn-dark" onclick="location.reload()">VOLTAR</button>
     </div>
 
-    <div id="screen-login-school" class="card hidden">
-        <input type="password" id="pass-school" placeholder="SENHA DA ESCOLA">
-        <button class="btn-cheguei" onclick="loginMonitor()">ACESSAR</button>
-    </div>
 </div>
 
 <script>
+    // CONFIGURAÇÃO FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyBDdVksMaItsqib7g2wIye78q70q0KK3fk",
         authDomain: "saidagaia.firebaseapp.com",
@@ -102,110 +102,130 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let alunosParaEnviar = [];
-    let idsMonitorados = [];
+    let streamVideo;
+    let fotoData = null;
+    let dadosPaiLogado = null;
 
     function goTo(id) {
         document.querySelectorAll('.container > div:not(header)').forEach(el => el.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
+        if(id === 'screen-panel-diretoria') startCamera();
     }
 
-    function validarCPF() {
-        const cpf = document.getElementById('cpf-input').value.trim();
-        if(!cpf) return alert("Por favor, digite o CPF.");
+    // --- DIRETORIA ---
+    function loginDiretoria() {
+        if(document.getElementById('pass-diretoria').value === '1234') {
+            goTo('screen-panel-diretoria');
+        } else { alert("Senha Incorreta!"); }
+    }
 
-        db.ref('cadastros').orderByChild('cpf_pai').equalTo(cpf).once('value', snapshot => {
-            const data = snapshot.val();
-            if(data) {
-                alunosParaEnviar = Object.values(data);
-                const container = document.getElementById('lista-filhos-vinculados');
-                container.innerHTML = alunosParaEnviar.map(a => `<div style="margin-bottom:5px;">• <strong>${a.aluno}</strong> (${a.sala})</div>`).join('');
-                goTo('screen-confirmar');
-            } else {
-                alert("CPF não encontrado no sistema.");
-            }
+    async function startCamera() {
+        streamVideo = await navigator.mediaDevices.getUserMedia({ video: true });
+        document.getElementById('video').srcObject = streamVideo;
+    }
+
+    function takePhoto() {
+        const canvas = document.getElementById('canvas');
+        const video = document.getElementById('video');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        fotoData = canvas.toDataURL('image/jpeg');
+        document.getElementById('photo-preview').src = fotoData;
+        document.getElementById('photo-preview').classList.remove('hidden');
+        video.classList.add('hidden');
+        document.getElementById('btn-snap').innerText = "TIRAR OUTRA";
+    }
+
+    function addFilhoCampo() {
+        const div = document.createElement('div');
+        div.className = 'filho-row';
+        div.innerHTML = `<input type="text" class="reg-aluno" placeholder="NOME DO ALUNO"><input type="text" class="reg-serie" placeholder="SÉRIE">`;
+        document.getElementById('container-filhos').appendChild(div);
+    }
+
+    function salvarCadastro() {
+        const cpf = document.getElementById('reg-cpf').value;
+        const nomePai = document.getElementById('reg-nome-pai').value.toUpperCase();
+        const nomesAlunos = document.querySelectorAll('.reg-aluno');
+        const seriesAlunos = document.querySelectorAll('.reg-serie');
+
+        let filhos = [];
+        nomesAlunos.forEach((n, i) => {
+            if(n.value) filhos.push({ nome: n.value.toUpperCase(), serie: seriesAlunos[i].value.toUpperCase() });
+        });
+
+        if(!cpf || !fotoData) return alert("CPF e Foto são obrigatórios!");
+
+        db.ref('cadastros/' + cpf).set({
+            cpf_pai: cpf,
+            responsavel: nomePai,
+            filhos: filhos,
+            foto: fotoData
+        }).then(() => {
+            alert("Cadastro realizado com sucesso!");
+            location.reload();
         });
     }
 
-    function enviarChamadaMultipla() {
-        idsMonitorados = [];
-        alunosParaEnviar.forEach(a => {
-            const newRef = db.ref('fila/').push();
-            idsMonitorados.push(newRef.key);
-            newRef.set({
-                aluno: a.aluno, sala: a.sala, responsavel: a.responsavel,
-                chegada: new Date().getTime(), status: 'aguardando'
+    // --- PAIS ---
+    function authPai() {
+        const cpf = document.getElementById('cpf-login').value;
+        db.ref('cadastros/' + cpf).once('value', snap => {
+            if(snap.exists()) {
+                dadosPaiLogado = snap.val();
+                document.getElementById('display-foto-pai').src = dadosPaiLogado.foto;
+                document.getElementById('display-nome-pai').innerText = dadosPaiLogado.responsavel;
+                document.getElementById('display-filhos').innerText = "Filhos: " + dadosPaiLogado.filhos.map(f => f.nome).join(', ');
+                goTo('screen-chamada');
+            } else { alert("CPF não localizado!"); }
+        });
+    }
+
+    function enviarChamada() {
+        dadosPaiLogado.filhos.forEach(f => {
+            db.ref('fila/').push({
+                aluno: f.nome,
+                serie: f.serie,
+                responsavel: dadosPaiLogado.responsavel,
+                foto: dadosPaiLogado.foto,
+                hora: new Date().toLocaleTimeString(),
+                status: 'aguardando'
             });
         });
-        iniciarCronometro();
-        escutarStatusPai();
-        goTo('screen-status');
+        alert("Aviso enviado! Aguarde no portão.");
+        location.reload();
     }
 
-    function escutarStatusPai() {
-        idsMonitorados.forEach(id => {
-            db.ref('fila/' + id).on('value', snap => {
-                if(snap.val() && snap.val().status === 'entregue') {
-                    document.getElementById('status-waiting').classList.add('hidden');
-                    document.getElementById('status-finished').classList.remove('hidden');
-                }
-            });
-        });
-    }
+    // --- MONITORIA ---
+    function loginMonitor() { /* Implementar senha se quiser */ goTo('screen-monitor'); listenFila(); }
 
-    function iniciarCronometro() {
-        const inicio = new Date();
-        const t = setInterval(() => {
-            if(!document.getElementById('status-finished').classList.contains('hidden')) clearInterval(t);
-            const diff = Math.floor((new Date() - inicio)/1000);
-            const m = Math.floor(diff/60).toString().padStart(2,'0');
-            const s = (diff%60).toString().padStart(2,'0');
-            document.getElementById('cronometro-pai').innerText = `${m}:${s}`;
-        }, 1000);
-    }
-
-    function loginMonitor() {
-        if(document.getElementById('pass-school').value === 'escola') {
-            goTo('screen-monitor');
-            escutarBancoMonitor();
-        } else { alert("Senha incorreta."); }
-    }
-
-    function escutarBancoMonitor() {
-        db.ref('fila/').on('value', snapshot => {
-            const fila = document.getElementById('fila-monitor');
-            const historico = document.getElementById('lista-entregues');
-            fila.innerHTML = ""; historico.innerHTML = "";
-            let count = 0;
-            const dados = snapshot.val();
+    function listenFila() {
+        db.ref('fila/').on('value', snap => {
+            const container = document.getElementById('fila-lista');
+            container.innerHTML = "";
+            const dados = snap.val();
             if(dados) {
-                const itens = Object.keys(dados).map(k => ({id: k, ...dados[k]})).reverse();
-                itens.forEach(item => {
+                Object.keys(dados).forEach(id => {
+                    const item = dados[id];
                     if(item.status === 'aguardando') {
-                        count++;
-                        const min = Math.floor((new Date().getTime() - item.chegada) / 60000);
-                        fila.innerHTML += `
-                            <div class="fila-item">
-                                <div><strong>${item.aluno}</strong> <span style="color:var(--warning); font-size:12px;">${min}m</span><br><small>${item.sala} | ${item.responsavel}</small></div>
-                                <button class="btn-cheguei" style="width:auto; padding:10px 15px;" onclick="darBaixa('${item.id}', ${item.chegada})">LIBERAR</button>
-                            </div>`;
-                    } else {
-                        historico.innerHTML += `<tr><td>${item.aluno}</td><td>${item.sala}</td><td>${item.horaSaida}</td><td style="color:var(--warning)">${item.tempoTotal}</td></tr>`;
+                        container.innerHTML += `
+                        <div class="card" style="display:flex; align-items:center; gap:15px; border-left:5px solid var(--warning)">
+                            <img src="${item.foto}" style="width:70px; height:70px; border-radius:10px; object-fit:cover;">
+                            <div style="flex:1">
+                                <b style="color:var(--primary)">${item.aluno}</b> (${item.serie})<br>
+                                <small>Pai: ${item.responsavel}</small>
+                            </div>
+                            <button class="btn btn-success" style="width:auto; padding:10px;" onclick="darBaixa('${id}')">OK</button>
+                        </div>`;
                     }
                 });
             }
-            document.getElementById('badge-total').innerText = count;
         });
     }
 
-    function darBaixa(id, chegada) {
-        const totalMin = Math.floor((new Date().getTime() - chegada) / 60000);
-        db.ref('fila/' + id).update({
-            status: 'entregue',
-            horaSaida: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-            tempoTotal: totalMin + " MIN"
-        });
-    }
+    function darBaixa(id) { db.ref('fila/' + id).update({ status: 'entregue' }); }
+
 </script>
 </body>
 </html>
