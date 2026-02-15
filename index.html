@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMG - Gestão de Saída</title>
+    <title>DMG - Sistema de Saída</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -13,18 +13,18 @@
         .container { max-width: 600px; margin: auto; }
         .hidden { display: none !important; }
         .card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
-        input { width: 100%; padding: 15px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; margin-bottom: 10px; box-sizing: border-box; }
+        input { width: 100%; padding: 15px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; margin-bottom: 10px; box-sizing: border-box; font-size: 16px; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
         .btn-primary { background: var(--primary); color: #000; margin-bottom: 10px; }
         .btn-success { background: var(--success); color: white; }
         .btn-dark { background: #334155; color: white; margin-top: 10px; }
-        .item-fila { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #334155; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; color: var(--warning); padding: 8px; font-size: 12px; border-bottom: 1px solid #334155; }
-        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
-        #modal-foto { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        #img-modal { width: 100%; max-width: 320px; border-radius: 15px; border: 4px solid var(--primary); }
-        #video { width: 100%; border-radius: 10px; background: #000; display: none; margin-top: 10px; }
+        .item-fila { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #334155; }
+        .timer { font-size: 45px; font-weight: bold; color: var(--warning); margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        th { text-align: left; color: var(--warning); padding: 8px; border-bottom: 1px solid #334155; }
+        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        #video { width: 100%; border-radius: 10px; background: #000; display: none; margin-bottom: 10px; }
+        .btn-icon { background: none; border: none; color: white; cursor: pointer; font-size: 24px; padding: 5px; }
     </style>
 </head>
 <body>
@@ -37,203 +37,59 @@
     <div id="screen-home">
         <button class="btn btn-primary" onclick="goTo('screen-login-pai')">ÁREA DOS PAIS</button>
         <button class="btn btn-dark" onclick="goTo('screen-login-monitor')">MONITORIA</button>
-        <button class="btn btn-dark" style="opacity:0.4" onclick="goTo('screen-login-diretoria')">DIRETORIA</button>
+        <button class="btn btn-dark" style="opacity:0.5" onclick="goTo('screen-login-diretoria')">DIRETORIA</button>
     </div>
 
     <div id="screen-login-diretoria" class="card hidden">
-        <h3>DIRETORIA</h3>
+        <h3>ACESSO DIRETORIA</h3>
         <input type="password" id="pass-dir" placeholder="SENHA">
-        <button class="btn btn-success" onclick="validaLogin('pass-dir', '1234', 'screen-adm')">ENTRAR</button>
+        <button class="btn btn-success" onclick="checkPass('pass-dir', '1234', 'screen-adm')">ENTRAR</button>
         <button class="btn btn-dark" onclick="goTo('screen-home')">VOLTAR</button>
     </div>
 
     <div id="screen-adm" class="card hidden">
-        <h3>CADASTRO</h3>
-        <input type="number" id="reg-cpf" placeholder="CPF DO PAI">
-        <input type="text" id="reg-pai" placeholder="NOME DO PAI">
+        <h3>CADASTRO DE ALUNOS</h3>
+        <input type="number" id="reg-cpf" placeholder="CPF DO PAI (LOGIN)">
+        <input type="text" id="reg-pai" placeholder="NOME DO RESPONSÁVEL">
         <div id="cont-filhos">
-            <input type="text" class="reg-aluno" placeholder="NOME ALUNO">
-            <input type="text" class="reg-serie" placeholder="SÉRIE">
+            <div class="card" style="background: rgba(0,0,0,0.2); padding: 10px;">
+                <input type="text" class="reg-aluno" placeholder="NOME DO ALUNO">
+                <input type="text" class="reg-serie" placeholder="SÉRIE (ex: 4ºA)">
+            </div>
         </div>
-        <button class="btn btn-dark" onclick="addCampo()">+ FILHO</button>
+        <button class="btn btn-dark" style="padding: 10px; font-size: 12px;" onclick="addCampo()">+ ADICIONAR FILHO</button>
         
         <video id="video" autoplay playsinline></video>
         <button id="btn-camera" class="btn btn-primary" style="margin-top:10px" onclick="ligarCamera()">ABRIR CÂMERA</button>
-        <button id="btn-snap" class="btn btn-success hidden" onclick="capturar()">TIRAR FOTO AGORA</button>
+        <button id="btn-snap" class="btn btn-success hidden" onclick="capturar()">TIRAR FOTO</button>
         
-        <button class="btn btn-success" style="margin-top:20px" onclick="salvar()">SALVAR NO BANCO</button>
+        <button class="btn btn-success" style="margin-top:20px" onclick="salvar()">SALVAR CADASTRO</button>
         <button class="btn btn-dark" onclick="location.reload()">CANCELAR</button>
     </div>
 
     <div id="screen-login-monitor" class="card hidden">
-        <h3>MONITORIA</h3>
+        <h3>ACESSO MONITORIA</h3>
         <input type="password" id="pass-mon" placeholder="SENHA">
-        <button class="btn btn-success" onclick="validaLogin('pass-mon', 'escola', 'screen-monitor')">ENTRAR</button>
+        <button class="btn btn-success" onclick="checkPass('pass-mon', 'escola', 'screen-monitor')">ENTRAR</button>
     </div>
 
     <div id="screen-monitor" class="card hidden">
-        <h3 style="color:var(--warning)">EM ESPERA</h3>
+        <h3 style="color:var(--warning)">FILA DE ESPERA</h3>
         <div id="lista-monitor" class="card" style="padding:0"></div>
-
+        
         <h3 style="color:var(--success); margin-top:20px;">LIBERADOS HOJE</h3>
         <div class="card" style="padding:0; overflow-x: auto;">
-            <table>
-                <thead><tr><th>ALUNO</th><th>SALA</th><th>SAÍDA</th></tr></thead>
-                <tbody id="lista-entregues"></tbody>
-            </table>
+            <table><thead><tr><th>ALUNO (SALA)</th><th>RESPONSÁVEL</th><th>HORA</th></tr></thead><tbody id="lista-entregues"></tbody></table>
         </div>
         <button class="btn btn-dark" onclick="location.reload()">SAIR</button>
     </div>
 
     <div id="screen-login-pai" class="card hidden">
-        <input type="number" id="cpf-pai" placeholder="SEU CPF">
+        <h3>IDENTIFICAÇÃO</h3>
+        <input type="number" id="cpf-pai" placeholder="DIGITE SEU CPF">
         <button class="btn btn-success" onclick="loginPai()">ENTRAR</button>
     </div>
 
     <div id="screen-pai-home" class="card hidden" style="text-align:center;">
-        <h2 id="nome-pai-logado"></h2>
-        <p id="lista-filhos-pai"></p>
-        <button class="btn btn-success" onclick="chamar()">ESTOU NO PORTÃO</button>
-    </div>
-
-    <div id="modal-foto" class="hidden">
-        <img id="img-modal">
-        <h3 id="nome-modal" style="margin:15px 0"></h3>
-        <p id="info-pai-modal" style="color:var(--primary)"></p>
-        <button class="btn btn-success" id="btn-confirmar-entrega">LIBERAR SAÍDA</button>
-        <button class="btn btn-dark" onclick="document.getElementById('modal-foto').classList.add('hidden')">FECHAR</button>
-    </div>
-</div>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBDdVksMaItsqib7g2wIye78q70q0KK3fk",
-        authDomain: "saidagaia.firebaseapp.com",
-        databaseURL: "https://saidagaia-default-rtdb.firebaseio.com",
-        projectId: "saidagaia",
-        storageBucket: "saidagaia.firebasestorage.app",
-        messagingSenderId: "711059544383",
-        appId: "1:711059544383:web:217491ab4525a083709b8a"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let fotoBase64 = null;
-    let userPai = null;
-    let localStream = null;
-
-    function goTo(id){
-        document.querySelectorAll('.container > div:not(header)').forEach(e => e.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-        if(id === 'screen-monitor') initMonitor();
-    }
-
-    function validaLogin(input, senha, proxima) {
-        if(document.getElementById(input).value === senha) goTo(proxima);
-        else alert("Ops, senha errada");
-    }
-
-    async function ligarCamera(){
-        try {
-            localStream = await navigator.mediaDevices.getUserMedia({video:true});
-            const v = document.getElementById('video');
-            v.srcObject = localStream;
-            v.style.display = 'block';
-            document.getElementById('btn-camera').classList.add('hidden');
-            document.getElementById('btn-snap').classList.remove('hidden');
-        } catch(e) { alert("Câmera não autorizada ou indisponível."); }
-    }
-
-    function capturar(){
-        const v = document.getElementById('video');
-        const c = document.createElement('canvas');
-        c.width = v.videoWidth; c.height = v.videoHeight;
-        c.getContext('2d').drawImage(v, 0, 0);
-        fotoBase64 = c.toDataURL('image/jpeg', 0.5);
-        
-        // Desliga a câmera após capturar
-        localStream.getTracks().forEach(track => track.stop());
-        v.style.display = 'none';
-        document.getElementById('btn-snap').classList.add('hidden');
-        document.getElementById('btn-camera').innerText = "FOTO OK! (TIRAR OUTRA)";
-        document.getElementById('btn-camera').classList.remove('hidden');
-        alert("Foto capturada!");
-    }
-
-    function addCampo(){
-        document.getElementById('cont-filhos').insertAdjacentHTML('beforeend', '<input type="text" class="reg-aluno" placeholder="NOME ALUNO"><input type="text" class="reg-serie" placeholder="SÉRIE">');
-    }
-
-    function salvar(){
-        const cpf = document.getElementById('reg-cpf').value;
-        const pai = document.getElementById('reg-pai').value.toUpperCase();
-        const alunos = document.querySelectorAll('.reg-aluno');
-        const series = document.querySelectorAll('.reg-serie');
-        let filhos = [];
-        alunos.forEach((n, i) => { if(n.value) filhos.push({nome: n.value.toUpperCase(), serie: series[i].value.toUpperCase()}); });
-        if(!cpf || !fotoBase64) return alert("Falta CPF ou Foto");
-        db.ref('cadastros/' + cpf).set({responsavel: pai, filhos, foto: fotoBase64}).then(()=>location.reload());
-    }
-
-    function loginPai(){
-        const cpf = document.getElementById('cpf-pai').value;
-        db.ref('cadastros/' + cpf).once('value', s => {
-            if(s.exists()){
-                userPai = s.val();
-                document.getElementById('nome-pai-logado').innerText = userPai.responsavel;
-                document.getElementById('lista-filhos-pai').innerText = userPai.filhos.map(f => f.nome).join(' / ');
-                goTo('screen-pai-home');
-            } else alert("CPF não cadastrado.");
-        });
-    }
-
-    function chamar(){
-        userPai.filhos.forEach(f => {
-            db.ref('fila/').push({
-                aluno: f.nome, serie: f.serie, responsavel: userPai.responsavel, 
-                foto: userPai.foto, status: 'aguardando',
-                hora: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-            });
-        });
-        alert("Aguarde no portão!"); location.reload();
-    }
-
-    function initMonitor(){
-        db.ref('fila/').on('value', snap => {
-            const espera = document.getElementById('lista-monitor');
-            const entregues = document.getElementById('lista-entregues');
-            espera.innerHTML = ""; entregues.innerHTML = "";
-            const dados = snap.val();
-            if(!dados) return;
-
-            Object.keys(dados).reverse().forEach(id => {
-                const item = dados[id];
-                if(item.status === 'aguardando'){
-                    espera.innerHTML += `<div class="item-fila" onclick="abrirConf('${id}',true)"><div><b>${item.aluno}</b><br><small>${item.serie}</small></div><i class="bi bi-eye-fill"></i></div>`;
-                } else {
-                    entregues.innerHTML += `<tr onclick="abrirConf('${id}',false)"><td>${item.aluno}</td><td>${item.serie}</td><td>${item.saida}</td></tr>`;
-                }
-            });
-        });
-    }
-
-    function abrirConf(id, isWait){
-        db.ref('fila/' + id).once('value', s => {
-            const d = s.val();
-            document.getElementById('img-modal').src = d.foto;
-            document.getElementById('nome-modal').innerText = d.aluno;
-            document.getElementById('info-pai-modal').innerText = d.responsavel;
-            const b = document.getElementById('btn-confirmar-entrega');
-            if(isWait){
-                b.classList.remove('hidden');
-                b.onclick = () => {
-                    db.ref('fila/' + id).update({status:'entregue', saida: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})});
-                    document.getElementById('modal-foto').classList.add('hidden');
-                };
-            } else b.classList.add('hidden');
-            document.getElementById('modal-foto').classList.remove('hidden');
-        });
-    }
-</script>
-</body>
-</html>
+        <h2 id="nome-pai-logado" style="margin-bottom: 5px;"></h2>
+        <div id="lista-filhos-pai
