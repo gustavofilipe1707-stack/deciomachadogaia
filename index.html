@@ -10,35 +10,38 @@
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --primary: #00d4ff; --text: #f1f5f9; --success: #22c55e; --warning: #eab308; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; }
-        .container { max-width: 800px; margin: auto; }
+        .container { max-width: 850px; margin: auto; }
         .hidden { display: none !important; }
         .card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
-        input { width: 100%; padding: 15px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; margin-bottom: 10px; box-sizing: border-box; font-size: 16px; }
+        input { width: 100%; padding: 15px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; margin-bottom: 10px; box-sizing: border-box; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
         .btn-primary { background: var(--primary); color: #000; margin-bottom: 10px; }
         .btn-success { background: var(--success); color: white; }
         .btn-dark { background: #334155; color: white; margin-top: 10px; }
         
-        /* Layout Monitoria em Colunas */
-        .monitor-header { display: grid; grid-template-columns: 1.5fr 1fr 0.8fr 1.5fr 1fr; gap: 10px; padding: 10px; background: #334155; border-radius: 8px; font-weight: bold; font-size: 12px; margin-bottom: 10px; text-align: left; }
-        .item-fila-row { display: grid; grid-template-columns: 1.5fr 1fr 0.8fr 1.5fr 1fr; gap: 10px; align-items: center; padding: 10px; border-bottom: 1px solid #334155; font-size: 13px; }
+        /* Efeito Piscar para Novo Aluno na Fila */
+        @keyframes blink {
+            0% { background-color: var(--card); }
+            50% { background-color: #334155; border-color: var(--warning); }
+            100% { background-color: var(--card); }
+        }
+        .novo-aluno { animation: blink 1.5s infinite; border: 2px solid var(--warning) !important; }
+
+        /* Monitoria em Colunas */
+        .monitor-header { display: grid; grid-template-columns: 1.5fr 1fr 0.8fr 1.5fr 1fr; gap: 10px; padding: 12px; background: #1e293b; border-bottom: 2px solid #334155; font-weight: bold; font-size: 11px; text-transform: uppercase; }
+        .item-fila-row { display: grid; grid-template-columns: 1.5fr 1fr 0.8fr 1.5fr 1fr; gap: 10px; align-items: center; padding: 12px; border-bottom: 1px solid #334155; font-size: 13px; }
         .col-btn { display: flex; gap: 5px; }
-        .btn-mini-liberar { background: var(--success); color: white; border: none; padding: 8px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .btn-mini-foto { background: var(--primary); color: #000; border: none; padding: 8px; border-radius: 5px; cursor: pointer; }
+        .btn-mini-liberar { background: var(--success); color: white; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .btn-mini-foto { background: var(--primary); color: #000; border: none; padding: 8px; border-radius: 6px; cursor: pointer; }
 
         .timer { font-size: 45px; font-weight: bold; color: var(--warning); margin: 15px 0; }
-        #video { width: 100%; border-radius: 10px; background: #000; display: none; margin-bottom: 10px; }
-
-        /* Modal Foto que fecha ao clicar */
         #modal-foto { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header style="text-align:center; padding: 10px;">
-        <h1 style="color:var(--primary); font-size: 20px;">DÉCIO MACHADO GAIA - GESTÃO</h1>
-    </header>
+    <header style="text-align:center; padding: 10px;"><h1 style="color:var(--primary); font-size: 20px;">DÉCIO MACHADO GAIA</h1></header>
 
     <div id="screen-home">
         <button class="btn btn-primary" onclick="goTo('screen-login-pai')">ÁREA DOS PAIS</button>
@@ -47,7 +50,7 @@
     </div>
 
     <div id="screen-login-diretoria" class="card hidden">
-        <input type="password" id="pass-dir" placeholder="SENHA DIRETORIA">
+        <input type="password" id="pass-dir" placeholder="SENHA">
         <button class="btn btn-success" onclick="checkPass('pass-dir', '1234', 'screen-adm')">ENTRAR</button>
         <button class="btn btn-dark" onclick="goTo('screen-home')">VOLTAR</button>
     </div>
@@ -56,11 +59,9 @@
         <h3>CADASTRO</h3>
         <input type="number" id="reg-cpf" placeholder="CPF PAI">
         <input type="text" id="reg-pai" placeholder="NOME PAI">
-        <div id="cont-filhos">
-            <div class="card" style="padding: 10px;"><input type="text" class="reg-aluno" placeholder="ALUNO"><input type="text" class="reg-serie" placeholder="SALA/SÉRIE"></div>
-        </div>
+        <div id="cont-filhos"><div class="card"><input type="text" class="reg-aluno" placeholder="ALUNO"><input type="text" class="reg-serie" placeholder="SALA"></div></div>
         <button class="btn btn-dark" onclick="addCampo()">+ FILHO</button>
-        <video id="video" autoplay playsinline></video>
+        <video id="video" autoplay playsinline style="width:100%; border-radius:10px; display:none;"></video>
         <button id="btn-camera" class="btn btn-primary" onclick="ligarCamera()">ABRIR CÂMERA</button>
         <button id="btn-snap" class="btn btn-success hidden" onclick="capturar()">TIRAR FOTO</button>
         <button class="btn btn-success" style="margin-top:20px" onclick="salvar()">SALVAR</button>
@@ -68,24 +69,17 @@
     </div>
 
     <div id="screen-login-monitor" class="card hidden">
-        <input type="password" id="pass-mon" placeholder="SENHA MONITORIA">
+        <input type="password" id="pass-mon" placeholder="SENHA MONITOR">
         <button class="btn btn-success" onclick="checkPass('pass-mon', 'escola', 'screen-monitor')">ENTRAR</button>
     </div>
 
     <div id="screen-monitor" class="card hidden">
         <h3 style="color:var(--warning)">FILA DE ESPERA</h3>
-        <div class="monitor-header">
-            <span>PAI</span><span>CPF</span><span>SALA</span><span>ALUNO</span><span>AÇÃO</span>
-        </div>
-        <div id="lista-monitor" class="card" style="padding:0"></div>
+        <div class="monitor-header"><span>PAI</span><span>CPF</span><span>SALA</span><span>ALUNO</span><span>AÇÃO</span></div>
+        <div id="lista-monitor" style="border-radius:12px; overflow:hidden;"></div>
         
-        <h3 style="color:var(--success); margin-top:20px;">LIBERADOS</h3>
-        <div class="card" style="padding:0; overflow-x: auto;">
-            <table style="width:100%; border-collapse: collapse; font-size:12px;">
-                <thead><tr style="color:var(--warning)"><th>ALUNO</th><th>SALA</th><th>SAÍDA</th></tr></thead>
-                <tbody id="lista-entregues"></tbody>
-            </table>
-        </div>
+        <h3 style="color:var(--success); margin-top:20px;">LIBERADOS HOJE</h3>
+        <div class="card" style="padding:0;"><table style="width:100%; font-size:12px;"><tbody id="lista-entregues"></tbody></table></div>
         <button class="btn btn-dark" onclick="location.reload()">SAIR</button>
     </div>
 
@@ -103,8 +97,7 @@
 
     <div id="modal-foto" class="hidden" onclick="this.classList.add('hidden')">
         <img id="img-modal" style="width:85%; max-width: 450px; border-radius:15px; border:4px solid var(--primary);">
-        <h3 id="nome-modal" style="margin-top:15px; color:white; text-align:center;"></h3>
-        <p style="color:var(--primary)">Toque em qualquer lugar para fechar</p>
+        <h3 id="nome-modal" style="margin-top:15px; color:white;"></h3>
     </div>
 </div>
 
@@ -121,7 +114,18 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let userPai = null, localStream = null, fotoBase64 = null, timerInterval, loginCpf = "";
+    let userPai = null, localStream = null, fotoBase64 = null, ultimaFilaCount = 0;
+
+    // Função de Beep (Sinal Sonoro Curto)
+    function playBeep() {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
+        oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.15);
+    }
 
     function goTo(id){
         document.querySelectorAll('.container > div:not(header)').forEach(e => e.classList.add('hidden'));
@@ -129,12 +133,10 @@
         if(id === 'screen-monitor') initMonitor();
     }
 
-    function checkPass(inputId, senhaCorreta, proximaTela) {
-        if(document.getElementById(inputId).value === senhaCorreta) goTo(proximaTela);
-        else alert("Ops, senha errada");
+    function checkPass(inputId, senha, tela) {
+        if(document.getElementById(inputId).value === senha) goTo(tela); else alert("Ops, senha errada");
     }
 
-    // CADASTRO
     async function ligarCamera(){
         localStream = await navigator.mediaDevices.getUserMedia({video:true});
         document.getElementById('video').srcObject = localStream;
@@ -149,102 +151,37 @@
         c.getContext('2d').drawImage(v, 0, 0);
         fotoBase64 = c.toDataURL('image/jpeg', 0.5);
         localStream.getTracks().forEach(t => t.stop());
-        v.style.display = 'none';
-        document.getElementById('btn-snap').classList.add('hidden');
-        document.getElementById('btn-camera').classList.remove('hidden');
+        v.style.display = 'none'; document.getElementById('btn-snap').classList.add('hidden');
+        document.getElementById('btn-camera').classList.remove('hidden'); alert("Foto Ok!");
     }
     function addCampo(){ document.getElementById('cont-filhos').insertAdjacentHTML('beforeend', '<div class="card" style="margin-top:5px;"><input type="text" class="reg-aluno" placeholder="ALUNO"><input type="text" class="reg-serie" placeholder="SALA"></div>'); }
     function salvar(){
         const cpf = document.getElementById('reg-cpf').value;
         const pai = document.getElementById('reg-pai').value.toUpperCase();
         const alunos = document.querySelectorAll('.reg-aluno'), series = document.querySelectorAll('.reg-serie');
-        let filhos = [];
-        alunos.forEach((n, i) => { if(n.value) filhos.push({nome: n.value.toUpperCase(), serie: series[i].value.toUpperCase()}); });
+        let filhos = []; alunos.forEach((n, i) => { if(n.value) filhos.push({nome: n.value.toUpperCase(), serie: series[i].value.toUpperCase()}); });
         db.ref('cadastros/' + cpf).set({responsavel: pai, cpf: cpf, filhos, foto: fotoBase64}).then(()=>location.reload());
     }
 
-    // PAIS
     function loginPai(){
-        loginCpf = document.getElementById('cpf-pai').value;
-        db.ref('cadastros/' + loginCpf).once('value', s => {
+        const cpf = document.getElementById('cpf-pai').value;
+        db.ref('cadastros/' + cpf).once('value', s => {
             if(s.exists()){
-                userPai = s.val();
-                document.getElementById('nome-pai-logado').innerText = userPai.responsavel;
+                userPai = s.val(); document.getElementById('nome-pai-logado').innerText = userPai.responsavel;
                 document.getElementById('lista-filhos-pai').innerText = userPai.filhos.map(f => `${f.nome} (${f.serie})`).join(' / ');
                 goTo('screen-pai-home');
-            } else alert("CPF não localizado.");
+            } else alert("Não cadastrado.");
         });
     }
 
     function chamar(){
         const ids = [];
         userPai.filhos.forEach(f => {
-            const ref = db.ref('fila/').push();
-            ids.push(ref.key);
-            ref.set({aluno: f.nome, serie: f.serie, responsavel: userPai.responsavel, cpf: userPai.cpf || loginCpf, foto: userPai.foto, status: 'aguardando'});
+            const ref = db.ref('fila/').push(); ids.push(ref.key);
+            ref.set({aluno: f.nome, serie: f.serie, responsavel: userPai.responsavel, cpf: userPai.cpf, foto: userPai.foto, status: 'aguardando', timestamp: Date.now()});
         });
         document.getElementById('area-chamar').classList.add('hidden');
         document.getElementById('waiting-area').classList.remove('hidden');
-        let seg = 0;
-        timerInterval = setInterval(() => {
-            seg++;
-            document.getElementById('cronometro').innerText = Math.floor(seg/60).toString().padStart(2,'0') + ":" + (seg%60).toString().padStart(2,'0');
-        }, 1000);
+        let seg = 0; setInterval(() => { seg++; document.getElementById('cronometro').innerText = Math.floor(seg/60).toString().padStart(2,'0') + ":" + (seg%60).toString().padStart(2,'0'); }, 1000);
         ids.forEach(id => {
-            db.ref('fila/' + id).on('value', s => {
-                if(s.val() && s.val().status === 'entregue'){
-                    const v = new SpeechSynthesisUtterance("Filho entregue!");
-                    v.lang = 'pt-BR'; window.speechSynthesis.speak(v);
-                    location.reload();
-                }
-            });
-        });
-    }
-
-    // MONITORIA
-    function initMonitor(){
-        db.ref('fila/').on('value', snap => {
-            const espera = document.getElementById('lista-monitor');
-            const entregues = document.getElementById('lista-entregues');
-            espera.innerHTML = ""; entregues.innerHTML = "";
-            const dados = snap.val();
-            if(!dados) return;
-
-            Object.keys(dados).reverse().forEach(id => {
-                const item = dados[id];
-                if(item.status === 'aguardando'){
-                    espera.innerHTML += `
-                    <div class="item-fila-row">
-                        <span>${item.responsavel.split(' ')[0]}</span>
-                        <span>${item.cpf || '---'}</span>
-                        <span>${item.serie}</span>
-                        <span><b>${item.aluno}</b></span>
-                        <div class="col-btn">
-                            <button class="btn-mini-foto" onclick="verFoto('${id}')"><i class="bi bi-camera"></i></button>
-                            <button class="btn-mini-liberar" onclick="liberar('${id}')">OK ✅</button>
-                        </div>
-                    </div>`;
-                } else {
-                    entregues.innerHTML += `<tr><td>${item.aluno}</td><td>${item.serie}</td><td>${item.saida}</td></tr>`;
-                }
-            });
-        });
-    }
-
-    function verFoto(id){
-        db.ref('fila/' + id).once('value', s => {
-            document.getElementById('img-modal').src = s.val().foto;
-            document.getElementById('nome-modal').innerText = "PAI: " + s.val().responsavel;
-            document.getElementById('modal-foto').classList.remove('hidden');
-        });
-    }
-
-    function liberar(id){
-        db.ref('fila/' + id).update({
-            status: 'entregue', 
-            saida: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-        });
-    }
-</script>
-</body>
-</html>
+            db.
