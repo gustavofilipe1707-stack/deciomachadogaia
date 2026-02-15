@@ -12,83 +12,97 @@
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; }
         .container { max-width: 600px; margin: auto; }
         .hidden { display: none !important; }
-        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
-        input { width: 100%; padding: 15px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; margin-bottom: 10px; box-sizing: border-box; font-size: 16px; }
-        .btn { width: 100%; padding: 18px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; margin-bottom: 10px; }
+        .card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
+        input { width: 100%; padding: 15px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; margin-bottom: 10px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
+        .btn-primary { background: var(--primary); color: #000; margin-bottom: 10px; }
         .btn-success { background: var(--success); color: white; }
-        .btn-primary { background: var(--primary); color: #000; }
-        .btn-dark { background: #334155; color: white; }
-        video, canvas, #photo-preview { width: 100%; border-radius: 10px; background: #000; margin-bottom: 10px; }
-        .monitor-card { display: flex; align-items: center; gap: 15px; border-left: 6px solid var(--warning); padding: 15px; }
-        .monitor-foto { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; border: 2px solid var(--primary); }
+        .btn-dark { background: #334155; color: white; margin-top: 10px; }
+        
+        .item-fila { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #334155; cursor: pointer; }
+        .item-info b { color: var(--primary); font-size: 16px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th { text-align: left; color: var(--warning); padding: 8px; border-bottom: 1px solid #334155; }
+        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        #modal-foto { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; text-align: center; }
+        #img-modal { width: 100%; max-width: 320px; border-radius: 15px; border: 4px solid var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header style="text-align:center; padding: 20px 0;">
-        <h1 style="color:var(--primary); margin:0; font-size: 24px;">DÉCIO MACHADO GAIA</h1>
+    <header style="text-align:center; padding: 15px;">
+        <h1 style="color:var(--primary); font-size: 22px;">DÉCIO MACHADO GAIA</h1>
     </header>
 
     <div id="screen-home">
-        <button class="btn btn-primary" onclick="goTo('screen-login-pai')"><i class="bi bi-people-fill"></i> ÁREA DOS PAIS</button>
-        <button class="btn btn-dark" onclick="goTo('screen-login-school')"><i class="bi bi-mortarboard-fill"></i> MONITORIA</button>
-        <button class="btn btn-dark" style="opacity:0.5" onclick="goTo('screen-login-diretoria')"><i class="bi bi-shield-lock-fill"></i> DIRETORIA</button>
+        <button class="btn btn-primary" onclick="goTo('screen-login-pai')">ÁREA DOS PAIS</button>
+        <button class="btn btn-dark" onclick="goTo('screen-login-monitor')">MONITORIA</button>
+        <button class="btn btn-dark" style="opacity:0.4" onclick="goTo('screen-login-diretoria')">DIRETORIA</button>
     </div>
 
     <div id="screen-login-diretoria" class="card hidden">
-        <h3>ACESSO DIRETORIA</h3>
-        <input type="password" id="pass-diretoria" placeholder="SENHA">
-        <button class="btn btn-success" onclick="if(document.getElementById('pass-diretoria').value==='1234') goTo('screen-panel-diretoria'); else alert('Erro!');">ENTRAR</button>
-        <button class="btn btn-dark" onclick="goTo('screen-home')">VOLTAR</button>
+        <h3>DIRETORIA</h3>
+        <input type="password" id="pass-dir" placeholder="SENHA">
+        <button class="btn btn-success" onclick="if(document.getElementById('pass-dir').value==='1234') goTo('screen-adm'); else alert('Erro');">ENTRAR</button>
     </div>
 
-    <div id="screen-panel-diretoria" class="card hidden">
-        <h3 style="color:var(--primary)">CADASTRO DIRETORIA</h3>
-        <input type="number" id="reg-cpf" placeholder="CPF DO RESPONSÁVEL (LOGIN)">
-        <input type="text" id="reg-nome-pai" placeholder="NOME DO RESPONSÁVEL">
-        <div id="container-filhos">
-            <div class="card" style="padding:10px; background: rgba(0,0,0,0.2)">
-                <input type="text" class="reg-aluno" placeholder="NOME DO ALUNO">
-                <input type="text" class="reg-serie" placeholder="SÉRIE (EX: 4A)">
-            </div>
+    <div id="screen-adm" class="card hidden">
+        <h3>NOVO CADASTRO</h3>
+        <input type="number" id="reg-cpf" placeholder="CPF DO PAI (TOKEN)">
+        <input type="text" id="reg-pai" placeholder="NOME DO PAI">
+        <div id="cont-filhos">
+            <input type="text" class="reg-aluno" placeholder="NOME ALUNO">
+            <input type="text" class="reg-serie" placeholder="SÉRIE">
         </div>
-        <button class="btn btn-dark" style="padding:10px; margin-bottom:20px;" onclick="addFilhoCampo()">+ FILHO</button>
-        
-        <video id="video" autoplay playsinline></video>
-        <img id="photo-preview" class="hidden">
-        <button id="btn-snap" class="btn btn-primary" onclick="takePhoto()">CAPTURAR FOTO</button>
-        
-        <button class="btn btn-success" onclick="salvarCadastro()">SALVAR TUDO</button>
+        <button class="btn btn-dark" onclick="addCampo()">+ FILHO</button>
+        <video id="video" autoplay playsinline style="width:100%; margin-top:10px; border-radius:10px;"></video>
+        <button class="btn btn-primary" onclick="capturar()">TIRAR FOTO</button>
+        <button class="btn btn-success" onclick="salvar()">SALVAR NO SISTEMA</button>
         <button class="btn btn-dark" onclick="location.reload()">CANCELAR</button>
     </div>
 
     <div id="screen-login-pai" class="card hidden">
-        <h3>LOGIN RESPONSÁVEL</h3>
-        <input type="number" id="cpf-login" placeholder="DIGITE SEU CPF">
-        <button class="btn btn-success" onclick="authPai()">VERIFICAR</button>
+        <input type="number" id="cpf-pai" placeholder="SEU CPF">
+        <button class="btn btn-success" onclick="loginPai()">ENTRAR</button>
         <button class="btn btn-dark" onclick="goTo('screen-home')">VOLTAR</button>
     </div>
 
-    <div id="screen-chamada" class="card hidden" style="text-align:center;">
-        <img id="display-foto-pai" style="width:150px; height:150px; border-radius:75px; object-fit:cover; border:4px solid var(--primary); margin-bottom:15px;">
-        <h2 id="display-nome-pai" style="margin:0"></h2>
-        <div id="display-filhos" style="margin:15px 0; color:var(--primary); font-weight:bold;"></div>
-        <button class="btn btn-success" onclick="enviarChamada()">CHAMAR AGORA</button>
-        <button class="btn btn-dark" onclick="location.reload()">SAIR</button>
+    <div id="screen-pai-home" class="card hidden" style="text-align:center;">
+        <h2 id="nome-pai-logado"></h2>
+        <p id="lista-filhos-pai"></p>
+        <button class="btn btn-success" onclick="chamar()">ESTOU NO PORTÃO</button>
     </div>
 
-    <div id="screen-login-school" class="card hidden">
-        <h3>LOGIN MONITORIA</h3>
-        <input type="password" id="pass-monitor" placeholder="SENHA">
-        <button class="btn btn-success" onclick="if(document.getElementById('pass-monitor').value==='escola') { goTo('screen-monitor'); listenFila(); } else alert('Erro!');">ENTRAR</button>
+    <div id="screen-login-monitor" class="card hidden">
+        <input type="password" id="pass-mon" placeholder="SENHA">
+        <button class="btn btn-success" onclick="if(document.getElementById('pass-mon').value==='escola') { goTo('screen-monitor'); initMonitor(); }">ENTRAR</button>
     </div>
 
     <div id="screen-monitor" class="card hidden">
-        <h2 style="color:var(--warning); text-align:center;">FILA DE RETIRADA</h2>
-        <div id="fila-lista"></div>
-        <button class="btn btn-dark" onclick="location.reload()">VOLTAR</button>
+        <h3 style="color:var(--warning)">EM ESPERA</h3>
+        <div id="lista-monitor" class="card" style="padding:0"></div>
+
+        <h3 style="color:var(--success); margin-top:30px;">ENTREGUES (HOJE)</h3>
+        <div class="card" style="padding:0">
+            <table>
+                <thead><tr><th>ALUNO</th><th>SALA</th><th>HORA</th></tr></thead>
+                <tbody id="lista-entregues"></tbody>
+            </table>
+        </div>
+        <button class="btn btn-dark" onclick="location.reload()">SAIR</button>
     </div>
+
+    <div id="modal-foto" class="hidden">
+        <img id="img-modal">
+        <h3 id="nome-modal" style="margin: 15px 0;"></h3>
+        <p id="info-pai-modal" style="color:var(--primary); margin-bottom:20px;"></p>
+        <button class="btn btn-success" id="btn-confirmar-entrega">CONFIRMAR SAÍDA</button>
+        <button class="btn btn-dark" onclick="document.getElementById('modal-foto').classList.add('hidden')">FECHAR</button>
+    </div>
+
 </div>
 
 <script>
@@ -104,101 +118,124 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let fotoData = null;
-    let dadosPai = null;
+    let fotoBase64 = null;
+    let userPai = null;
 
-    function goTo(id) {
-        document.querySelectorAll('.container > div:not(header)').forEach(el => el.classList.add('hidden'));
+    function goTo(id){
+        document.querySelectorAll('.container > div:not(header)').forEach(e => e.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
-        if(id === 'screen-panel-diretoria') startCamera();
+        if(id === 'screen-adm') ligarCamera();
     }
 
-    async function startCamera() {
+    async function ligarCamera(){
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            document.getElementById('video').srcObject = stream;
-        } catch (e) { alert("Câmera não disponível"); }
+            const s = await navigator.mediaDevices.getUserMedia({video:true});
+            document.getElementById('video').srcObject = s;
+        } catch(e) { alert("Câmera não autorizada."); }
     }
 
-    function takePhoto() {
-        const video = document.getElementById('video');
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-        fotoData = canvas.toDataURL('image/jpeg', 0.7);
-        document.getElementById('photo-preview').src = fotoData;
-        document.getElementById('photo-preview').classList.remove('hidden');
-        video.classList.add('hidden');
+    function capturar(){
+        const v = document.getElementById('video');
+        const c = document.createElement('canvas');
+        c.width = v.videoWidth; c.height = v.videoHeight;
+        c.getContext('2d').drawImage(v, 0, 0);
+        fotoBase64 = c.toDataURL('image/jpeg', 0.5);
+        alert("Foto capturada com sucesso!");
     }
 
-    function addFilhoCampo() {
-        const html = `<div class="card" style="padding:10px; background: rgba(0,0,0,0.2)"><input type="text" class="reg-aluno" placeholder="NOME DO ALUNO"><input type="text" class="reg-serie" placeholder="SÉRIE"></div>`;
-        document.getElementById('container-filhos').insertAdjacentHTML('beforeend', html);
+    function addCampo(){
+        document.getElementById('cont-filhos').insertAdjacentHTML('beforeend', '<input type="text" class="reg-aluno" placeholder="NOME ALUNO"><input type="text" class="reg-serie" placeholder="SÉRIE">');
     }
 
-    function salvarCadastro() {
+    function salvar(){
         const cpf = document.getElementById('reg-cpf').value;
-        const nomePai = document.getElementById('reg-nome-pai').value.toUpperCase();
+        const pai = document.getElementById('reg-pai').value.toUpperCase();
         const alunos = document.querySelectorAll('.reg-aluno');
         const series = document.querySelectorAll('.reg-serie');
         let filhos = [];
-        alunos.forEach((n, i) => { if(n.value) filhos.push({ nome: n.value.toUpperCase(), serie: series[i].value.toUpperCase() }); });
-
-        if(!cpf || !fotoData) return alert("Preencha CPF e tire a foto!");
-
-        db.ref('cadastros/' + cpf).set({ responsavel: nomePai, filhos, foto: fotoData })
-        .then(() => { alert("Sucesso!"); location.reload(); });
+        alunos.forEach((n, i) => { if(n.value) filhos.push({nome: n.value.toUpperCase(), serie: series[i].value.toUpperCase()}); });
+        
+        if(!cpf || !fotoBase64) return alert("Falta CPF ou Foto");
+        db.ref('cadastros/' + cpf).set({responsavel: pai, filhos, foto: fotoBase64}).then(()=>location.reload());
     }
 
-    function authPai() {
-        const cpf = document.getElementById('cpf-login').value;
-        db.ref('cadastros/' + cpf).once('value', snap => {
-            if(snap.exists()) {
-                dadosPai = snap.val();
-                document.getElementById('display-foto-pai').src = dadosPai.foto;
-                document.getElementById('display-nome-pai').innerText = dadosPai.responsavel;
-                document.getElementById('display-filhos').innerText = "Filhos: " + dadosPai.filhos.map(f => f.nome).join(' / ');
-                goTo('screen-chamada');
-            } else alert("CPF não cadastrado!");
+    function loginPai(){
+        const cpf = document.getElementById('cpf-pai').value;
+        db.ref('cadastros/' + cpf).once('value', s => {
+            if(s.exists()){
+                userPai = s.val();
+                document.getElementById('nome-pai-logado').innerText = userPai.responsavel;
+                document.getElementById('lista-filhos-pai').innerText = userPai.filhos.map(f => f.nome).join(' / ');
+                goTo('screen-pai-home');
+            } else alert("Cadastro não encontrado.");
         });
     }
 
-    function enviarChamada() {
-        dadosPai.filhos.forEach(f => {
+    function chamar(){
+        userPai.filhos.forEach(f => {
             db.ref('fila/').push({
-                aluno: f.nome, serie: f.serie, responsavel: dadosPai.responsavel,
-                foto: dadosPai.foto, status: 'aguardando', hora: new Date().toLocaleTimeString()
+                aluno: f.nome, 
+                serie: f.serie, 
+                responsavel: userPai.responsavel, 
+                foto: userPai.foto, 
+                status: 'aguardando',
+                horaChamada: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
             });
         });
-        alert("Monitor avisado!");
-        location.reload();
+        alert("Monitor avisado! Aguarde a liberação."); location.reload();
     }
 
-    function listenFila() {
+    function initMonitor(){
         db.ref('fila/').on('value', snap => {
-            const container = document.getElementById('fila-lista');
-            container.innerHTML = "";
+            const listaEspera = document.getElementById('lista-monitor');
+            const listaEntregues = document.getElementById('lista-entregues');
+            listaEspera.innerHTML = ""; listaEntregues.innerHTML = "";
             const dados = snap.val();
             if(!dados) return;
-            Object.keys(dados).forEach(id => {
+
+            Object.keys(dados).reverse().forEach(id => {
                 const item = dados[id];
-                if(item.status === 'aguardando') {
-                    container.innerHTML += `
-                        <div class="card monitor-card">
-                            <img src="${item.foto}" class="monitor-foto">
-                            <div style="flex:1">
-                                <b style="color:var(--primary); font-size:18px;">${item.aluno}</b><br>
-                                <small>${item.serie} | Pai: ${item.responsavel}</small>
-                            </div>
-                            <button class="btn btn-success" style="width:auto; padding:10px;" onclick="darBaixa('${id}')">OK</button>
+                if(item.status === 'aguardando'){
+                    listaEspera.innerHTML += `
+                        <div class="item-fila" onclick="abrirConferencia('${id}', true)">
+                            <div class="item-info"><b>${item.aluno}</b><br><small>${item.serie} | ${item.horaChamada}</small></div>
+                            <i class="bi bi-eye-fill" style="color:var(--primary)"></i>
                         </div>`;
+                } else {
+                    listaEntregues.innerHTML += `
+                        <tr onclick="abrirConferencia('${id}', false)" style="cursor:pointer">
+                            <td>${item.aluno}</td>
+                            <td>${item.serie}</td>
+                            <td>${item.horaSaida || '---'}</td>
+                        </tr>`;
                 }
             });
         });
     }
 
-    function darBaixa(id) { db.ref('fila/' + id).update({ status: 'entregue' }); }
+    function abrirConferencia(id, isAguardando){
+        db.ref('fila/' + id).once('value', s => {
+            const d = s.val();
+            document.getElementById('img-modal').src = d.foto;
+            document.getElementById('nome-modal').innerText = d.aluno + " (" + d.serie + ")";
+            document.getElementById('info-pai-modal').innerText = "RESPONSÁVEL: " + d.responsavel;
+            
+            const btn = document.getElementById('btn-confirmar-entrega');
+            if(isAguardando) {
+                btn.classList.remove('hidden');
+                btn.onclick = function(){
+                    db.ref('fila/' + id).update({
+                        status: 'entregue',
+                        horaSaida: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                    });
+                    document.getElementById('modal-foto').classList.add('hidden');
+                };
+            } else {
+                btn.classList.add('hidden');
+            }
+            document.getElementById('modal-foto').classList.remove('hidden');
+        });
+    }
 </script>
 </body>
 </html>
