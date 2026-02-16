@@ -14,21 +14,26 @@
         .hidden { display: none !important; }
         .card { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
         
-        /* Ajuste da Grid para Monitoria */
-        .table-header { display: grid; grid-template-columns: 1.5fr 0.8fr 1.5fr 1fr; gap: 8px; padding: 12px; background: #334155; font-weight: bold; border-radius: 8px 8px 0 0; font-size: 12px; color: var(--primary); }
+        /* Ajuste da Grid para Monitoria (Responsável agora ocupa 2 linhas: Nome e CPF) */
+        .table-header { display: grid; grid-template-columns: 1.5fr 0.8fr 1.5fr 1fr; gap: 8px; padding: 12px; background: #334155; font-weight: bold; border-radius: 8px 8px 0 0; font-size: 11px; color: var(--primary); text-transform: uppercase; }
         .row-item { display: grid; grid-template-columns: 1.5fr 0.8fr 1.5fr 1fr; gap: 8px; align-items: center; padding: 12px; border-bottom: 1px solid #334155; font-size: 12px; }
         
+        .cpf-sub { display: block; font-size: 10px; color: var(--warning); opacity: 0.8; }
+
         input { width: 100%; padding: 15px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; margin-bottom: 10px; box-sizing: border-box; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; text-transform: uppercase; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-success { background: var(--success); color: white; }
         .btn-primary { background: var(--primary); color: #000; }
         .btn-dark { background: #334155; color: white; }
 
-        /* Modal Visualizar Foto */
+        /* Tabela de Filhos na Tela do Pai */
+        .filhos-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 14px; }
+        .filhos-table th { color: var(--primary); padding: 10px; border-bottom: 1px solid #334155; text-align: left; }
+        .filhos-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; }
+
+        /* Modais */
         #photo-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #img-view { max-width: 90%; max-height: 70%; border: 3px solid var(--primary); border-radius: 15px; }
-
-        /* Modal Câmera */
         #camera-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #video-full { width: 100%; height: 100%; object-fit: cover; }
         .overlay-face { position: absolute; width: 280px; height: 380px; border: 4px solid var(--primary); border-radius: 50%; box-shadow: 0 0 0 1000px rgba(0,0,0,0.6); pointer-events: none; }
@@ -78,7 +83,6 @@
         <h3 style="color:var(--warning)">SAÍDA DE ALUNOS</h3>
         <div class="table-header"><span>RESPONSÁVEL</span><span>SALA</span><span>ALUNO</span><span>AÇÃO</span></div>
         <div id="lista-monitor"></div>
-        
         <h3 style="color:var(--success); margin-top:30px;">HISTÓRICO DE HOJE</h3>
         <button class="btn btn-primary" onclick="downloadSaidas()" style="margin-bottom:10px;"><i class="bi bi-download"></i> EXPORTAR SAÍDAS</button>
         <div class="table-header" style="background:#1e293b; color:var(--success)"><span>ALUNO</span><span>SALA</span><span>RESP.</span><span>HORA</span></div>
@@ -97,7 +101,12 @@
     
     <div id="screen-pai-home" class="card hidden" style="text-align:center;">
         <h2 id="nome-pai-logado"></h2>
-        <div id="lista-filhos-pai" style="color:var(--primary); font-weight:bold; margin:20px 0; border: 1px solid rgba(0,212,255,0.2); padding: 10px; border-radius: 8px;"></div>
+        <div class="card" style="background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.2);">
+            <table class="filhos-table">
+                <thead><tr><th>ALUNO</th><th>SALA/SÉRIE</th></tr></thead>
+                <tbody id="lista-filhos-pai"></tbody>
+            </table>
+        </div>
         <div id="area-chamar"><button class="btn btn-success" style="padding:25px" onclick="chamar()">ESTOU NO PORTÃO</button></div>
         <div id="waiting-area" class="hidden">
             <div class="timer" id="cronometro" style="font-size:50px; color:var(--warning)">00:00</div>
@@ -124,7 +133,6 @@
 <footer>EXITFLOW</footer>
 
 <script>
-    // CONFIGURAÇÃO FIREBASE
     const firebaseConfig = { apiKey: "AIzaSyBDdVksMaItsqib7g2wIye78q70q0KK3fk", authDomain: "saidagaia.firebaseapp.com", databaseURL: "https://saidagaia-default-rtdb.firebaseio.com", projectId: "saidagaia", storageBucket: "saidagaia.firebasestorage.app", messagingSenderId: "711059544383", appId: "1:711059544383:web:217491ab4525a083709b8a" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -133,10 +141,7 @@
 
     window.onload = () => {
         const salvo = localStorage.getItem('exitflow_cpf');
-        if(salvo) {
-            document.getElementById('cpf-pai').value = salvo;
-            document.getElementById('remember-cpf').checked = true;
-        }
+        if(salvo) { document.getElementById('cpf-pai').value = salvo; document.getElementById('remember-cpf').checked = true; }
     };
 
     function goTo(id){
@@ -157,13 +162,19 @@
                 userPai = s.val(); userPai.cpf = cpf;
                 if(remember) localStorage.setItem('exitflow_cpf', cpf); else localStorage.removeItem('exitflow_cpf');
                 document.getElementById('nome-pai-logado').innerText = userPai.responsavel;
-                document.getElementById('lista-filhos-pai').innerHTML = "FILHOS: " + userPai.filhos.map(f => `${f.nome} (${f.serie})`).join(' | ');
+                
+                // TABELA DE FILHOS (CORRIGIDO)
+                let html = "";
+                userPai.filhos.forEach(f => {
+                    html += `<tr><td><b>${f.nome}</b></td><td>${f.serie}</td></tr>`;
+                });
+                document.getElementById('lista-filhos-pai').innerHTML = html;
+                
                 goTo('screen-pai-home');
             } else { alert("CPF não cadastrado."); }
         });
     }
 
-    // MONITORIA
     function initMonitor(){
         const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
         db.ref('fila/').orderByChild('data').equalTo(hoje).on('value', snap => {
@@ -176,7 +187,10 @@
                 if(item.status === 'aguardando'){
                     espera.innerHTML += `
                     <div class="row-item" style="background:rgba(255,255,255,0.05); margin-bottom:5px; border-radius:8px;">
-                        <span>${item.responsavel}</span>
+                        <div>
+                            <span>${item.responsavel}</span>
+                            <span class="cpf-sub">CPF: ${item.cpf}</span>
+                        </div>
                         <span>${item.serie}</span>
                         <span><b>${item.aluno}</b></span>
                         <div style="display:flex; gap:5px;">
@@ -197,24 +211,13 @@
         document.getElementById('photo-modal').classList.remove('hidden');
     }
     function fecharFoto(){ document.getElementById('photo-modal').classList.add('hidden'); }
-
     function liberar(id){ db.ref('fila/' + id).update({status: 'entregue', saida: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}); }
 
-    // PAIS: CHAMAR (CORRIGIDO PARA ENVIAR FOTO)
     function chamar(){
         const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
         userPai.filhos.forEach(f => {
             const ref = db.ref('fila/').push();
-            ref.set({
-                aluno: f.nome, 
-                serie: f.serie, 
-                responsavel: userPai.responsavel, 
-                cpf: userPai.cpf, 
-                foto: userPai.foto || "", 
-                status: 'aguardando', 
-                timestamp: Date.now(), 
-                data: hoje
-            });
+            ref.set({ aluno: f.nome, serie: f.serie, responsavel: userPai.responsavel, cpf: userPai.cpf, foto: userPai.foto || "", status: 'aguardando', timestamp: Date.now(), data: hoje });
             ref.on('value', s => { if(s.val() && s.val().status === 'entregue') { clearInterval(timerInterval); document.getElementById('status-msg').innerHTML = "<b style='color:var(--success)'>ENTREGUE! OBRIGADO.</b>"; } });
         });
         document.getElementById('area-chamar').classList.add('hidden');
@@ -222,29 +225,11 @@
         let seg = 0; timerInterval = setInterval(() => { seg++; document.getElementById('cronometro').innerText = Math.floor(seg/60).toString().padStart(2,'0') + ":" + (seg%60).toString().padStart(2,'0'); }, 1000);
     }
 
-    // CADASTRO E CÂMERA
     async function abrirCameraFull(){ document.getElementById('camera-modal').classList.remove('hidden'); streamFull = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}}); document.getElementById('video-full').srcObject = streamFull; }
     function fecharCamera(){ if(streamFull) streamFull.getTracks().forEach(t => t.stop()); document.getElementById('camera-modal').classList.add('hidden'); }
-    function capturarFull(){ 
-        const v = document.getElementById('video-full'); 
-        const c = document.createElement('canvas'); 
-        c.width = v.videoWidth; c.height = v.videoHeight; 
-        c.getContext('2d').drawImage(v, 0, 0); 
-        fotoBase64 = c.toDataURL('image/jpeg', 0.6); 
-        fecharCamera(); 
-        alert("Foto capturada!"); 
-    }
+    function capturarFull(){ const v = document.getElementById('video-full'); const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0); fotoBase64 = c.toDataURL('image/jpeg', 0.6); fecharCamera(); alert("Foto capturada!"); }
     function addCampo(){ document.getElementById('cont-filhos').insertAdjacentHTML('beforeend', '<div class="card" style="background:#0f172a; margin-top:5px;"><input type="text" class="reg-aluno" placeholder="ALUNO"><input type="text" class="reg-serie" placeholder="SALA"></div>'); }
-    function salvar(){ 
-        const cpf = document.getElementById('reg-cpf').value; 
-        const pai = document.getElementById('reg-pai').value.toUpperCase(); 
-        const alunos = document.querySelectorAll('.reg-aluno'), series = document.querySelectorAll('.reg-serie'); 
-        let filhos = []; alunos.forEach((n, i) => { if(n.value) filhos.push({nome: n.value.toUpperCase(), serie: series[i].value.toUpperCase()}); }); 
-        if(!cpf || !fotoBase64) return alert("CPF e Foto são obrigatórios!"); 
-        db.ref('cadastros/' + cpf).set({responsavel: pai, filhos, foto: fotoBase64}).then(()=>location.reload()); 
-    }
-
-    // DOWNLOADS
+    function salvar(){ const cpf = document.getElementById('reg-cpf').value; const pai = document.getElementById('reg-pai').value.toUpperCase(); const alunos = document.querySelectorAll('.reg-aluno'), series = document.querySelectorAll('.reg-serie'); let filhos = []; alunos.forEach((n, i) => { if(n.value) filhos.push({nome: n.value.toUpperCase(), serie: series[i].value.toUpperCase()}); }); if(!cpf || !fotoBase64) return alert("CPF e Foto são obrigatórios!"); db.ref('cadastros/' + cpf).set({responsavel: pai, filhos, foto: fotoBase64}).then(()=>location.reload()); }
     function downloadSaidas() { const hoje = new Date().toLocaleDateString().replace(/\//g, '-'); db.ref('fila/').orderByChild('data').equalTo(hoje).once('value', s => { let csv = "ALUNO;SALA;RESPONSAVEL;CPF;HORA\n"; s.forEach(p => { const d = p.val(); if(d.status === 'entregue') csv += `${d.aluno};${d.serie};${d.responsavel};${d.cpf};${d.saida}\n`; }); const blob = new Blob([csv], {type:'text/csv;charset=utf-8'}); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Saidas_${hoje}.csv`; link.click(); }); }
     function downloadPais() { db.ref('cadastros/').once('value', s => { let csv = "RESPONSAVEL;CPF;FILHOS\n"; s.forEach(p => csv += `${p.val().responsavel};${p.key};${p.val().filhos.map(f=>f.nome).join("|")}\n`); const blob = new Blob([csv], {type:'text/csv;charset=utf-8'}); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "Lista_Pais.csv"; link.click(); }); }
 </script>
