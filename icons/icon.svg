@@ -1,12 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="90" fill="#080c14"/>
-  <text x="256" y="148" text-anchor="middle"
-    font-family="Arial,sans-serif" font-weight="900" font-size="148"
-    fill="#00d4ff" letter-spacing="-2">EF</text>
-  <text x="256" y="310" text-anchor="middle"
-    font-family="Arial,sans-serif" font-weight="700" font-size="72"
-    fill="#ffffff" letter-spacing="18">EXIT</text>
-  <text x="256" y="390" text-anchor="middle"
-    font-family="Arial,sans-serif" font-weight="700" font-size="72"
-    fill="#00d4ff" letter-spacing="14">FLOW</text>
+  <rect width="512" height="512" fill="#080c14"/>
+  <text x="256" y="330" text-anchor="middle"
+    font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="310"
+    fill="#00d4ff">EF</text>
 </svg>
