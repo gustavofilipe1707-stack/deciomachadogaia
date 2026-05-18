@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerar Ícones ExitFlow</title>
+  <style>
+    body { background: #111; color: #fff; font-family: Arial; display: flex; flex-direction: column; align-items: center; padding: 40px; gap: 20px; }
+    canvas { border: 1px solid #333; }
+    a { background: #00d4ff; color: #000; font-weight: bold; padding: 10px 24px; border-radius: 30px; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <h2>Gerar Ícones ExitFlow PWA</h2>
+  <p>Baixe e salve na pasta <strong>icons/</strong></p>
+
+  <canvas id="c192" width="192" height="192"></canvas>
+  <a id="dl192">⬇ Baixar icon-192.png</a>
+
+  <canvas id="c512" width="512" height="512"></canvas>
+  <a id="dl512">⬇ Baixar icon-512.png</a>
+
+  <script>
+    function draw(canvas, size) {
+      const ctx = canvas.getContext('2d');
+
+      // Fundo preto
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, size, size);
+
+      const fs = Math.round(size * 0.30);
+      ctx.font = `900 ${fs}px "Arial Black", Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Mede o texto completo para centralizar
+      ctx.fillStyle = '#ffffff';
+      const wExit = ctx.measureText('EXIT').width;
+      const wFlow = ctx.measureText('FLOW').width;
+      const total = wExit + wFlow;
+      const startX = (size - total) / 2;
+
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('EXIT', startX, size / 2);
+
+      ctx.fillStyle = '#00d4ff';
+      ctx.fillText('FLOW', startX + wExit, size / 2);
+    }
+
+    const c192 = document.getElementById('c192');
+    const c512 = document.getElementById('c512');
+    draw(c192, 192);
+    draw(c512, 512);
+
+    document.getElementById('dl192').href = c192.toDataURL('image/png');
+    document.getElementById('dl192').download = 'icon-192.png';
+    document.getElementById('dl512').href = c512.toDataURL('image/png');
+    document.getElementById('dl512').download = 'icon-512.png';
+  </script>
+</body>
+</html>
