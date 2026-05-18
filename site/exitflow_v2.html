@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#080e1a">
+<title>ExitFlow</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+<style>
+/* ================================================================
+   TOKENS
+================================================================ */
+:root {
+  --bg:         #080e1a;
+  --sf:         #0f1b2d;
+  --sf2:        #162032;
+  --sf3:        #1e2d42;
+  --bdr:        rgba(0,212,255,.10);
+  --bdr-h:      #1e2d42;
+  --cy:         #00d4ff;
+  --cy-glow:    rgba(0,212,255,.22);
+  --cy-dim:     rgba(0,212,255,.08);
+  --gn:         #22c55e;
+  --gn-dim:     rgba(34,197,94,.10);
+  --yw:         #f59e0b;
+  --yw-dim:     rgba(245,158,11,.10);
+  --rd:         #ef4444;
+  --rd-dim:     rgba(239,68,68,.10);
+  --pu:         #a78bfa;
+  --pu-dim:     rgba(167,139,250,.10);
+  --tx:         #e2e8f0;
+  --tx2:        #94a3b8;
+  --tx3:        #475569;
+  --r:          14px;
+  --rs:         8px;
+  --t:          .18s ease;
+}
+
+/* ================================================================
+   BASE
+================================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  height:100%;background:var(--bg);color:var(--tx);
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  overscroll-behavior:none;
+}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--sf3);border-radius:4px}
+
+/* ================================================================
+   SCREENS
+================================================================ */
+.screen{
+  display:none;flex-direction:column;min-height:100vh;
+  padding:16px;max-width:520px;width:100%;margin:0 auto;
+}
+.screen.wide{max-width:980px}
+.screen.active{display:flex}
+
+/* ================================================================
+   HEADER + BACK BUTTON
+================================================================ */
+.hdr{
+  position:relative;text-align:center;
+  padding:22px 48px 18px;  /* space for back btn */
+}
+.hdr-wide{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0 12px;border-bottom:1px solid var(--bdr-h);margin-bottom:16px;
+}
+.logo{
+  font-size:26px;font-weight:800;letter-spacing:3px;
+  color:var(--cy);text-shadow:0 0 24px var(--cy-glow);line-height:1;
+}
+.logo b{color:var(--tx);font-weight:800}
+.logo small{display:block;font-size:10px;font-weight:400;letter-spacing:4px;color:var(--tx3);margin-top:4px}
+
+/* BACK BUTTON — fixed top-left inside every screen header */
+.btn-home{
+  position:absolute;left:0;top:50%;transform:translateY(-50%);
+  background:var(--sf2);border:1px solid var(--bdr-h);
+  border-radius:var(--rs);color:var(--tx2);padding:7px 11px;
+  cursor:pointer;font-size:16px;transition:var(--t);
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:600;letter-spacing:.5px;
+}
+.btn-home:hover{color:var(--cy);border-color:var(--cy)}
+
+/* ================================================================
+   CARDS
+================================================================ */
+.card{
+  background:var(--sf);border:1px solid var(--bdr);
+  border-radius:var(--r);padding:20px;margin-bottom:12px;
+}
+.card-lbl{
+  font-size:10px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--tx3);margin-bottom:14px;
+}
+
+/* ================================================================
+   PORTAL
+================================================================ */
+.portal-card{
+  background:var(--sf);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:20px;margin-bottom:10px;display:flex;align-items:center;gap:16px;
+  cursor:pointer;transition:var(--t);-webkit-tap-highlight-color:transparent;
+}
+.portal-card:hover,.portal-card:active{border-color:var(--cy);background:var(--sf2);transform:translateX(3px)}
+.portal-card.hl{border-color:var(--cy);background:var(--cy-dim)}
+.p-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.p-icon.c{background:var(--cy-dim);color:var(--cy)}
+.p-icon.g{background:var(--gn-dim);color:var(--gn)}
+.p-icon.p{background:var(--pu-dim);color:var(--pu)}
+.p-title{font-weight:700;font-size:15px}
+.p-sub{font-size:12px;color:var(--tx3);margin-top:1px}
+.p-arrow{color:var(--tx3);font-size:16px;margin-left:auto}
+
+/* ================================================================
+   INPUTS
+================================================================ */
+.lbl{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);margin-bottom:6px}
+.inp{
+  width:100%;padding:14px 16px;background:var(--sf2);border:1px solid var(--bdr-h);
+  border-radius:var(--rs);color:var(--tx);font-size:15px;transition:var(--t);
+  outline:none;-webkit-appearance:none;margin-bottom:10px;
+}
+.inp:focus{border-color:var(--cy);box-shadow:0 0 0 3px var(--cy-dim)}
+.inp::placeholder{color:var(--tx3)}
+.inp-cpf{font-size:22px;letter-spacing:5px;text-align:center;font-weight:600}
+.inp-0{margin-bottom:0}
+.chk-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;cursor:pointer}
+.chk-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--cy);flex-shrink:0}
+.chk-row label{font-size:13px;color:var(--tx2);cursor:pointer}
+
+/* Sala filter select */
+.sala-sel{
+  background:var(--sf2);border:1px solid var(--bdr-h);border-radius:var(--rs);
+  color:var(--cy);padding:7px 10px;font-size:12px;font-weight:700;
+  cursor:pointer;outline:none;transition:var(--t);
+}
+.sala-sel:focus{border-color:var(--cy)}
+
+/* ================================================================
+   BUTTONS
+================================================================ */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:15px;border:none;border-radius:var(--rs);
+  font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  cursor:pointer;transition:var(--t);margin-bottom:8px;outline:none;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+}
+.btn:active{transform:scale(.98)}
+.btn-last{margin-bottom:0}
+.btn-cy{background:var(--cy);color:#000}
+.btn-cy:hover{box-shadow:0 0 20px var(--cy-glow)}
+.btn-gn{background:var(--gn);color:#fff}
+.btn-gn:hover{box-shadow:0 0 20px rgba(34,197,94,.3)}
+.btn-rd{background:var(--rd);color:#fff}
+.btn-gh{background:var(--sf2);color:var(--tx2);border:1px solid var(--bdr-h)}
+.btn-gh:hover{color:var(--tx)}
+.btn-sm{width:auto;padding:7px 14px;font-size:11px;margin-bottom:0;border-radius:6px}
+.btn-portao{padding:28px 20px;font-size:16px;letter-spacing:2px;border-radius:var(--r);background:var(--gn);color:#fff}
+.btn-portao:hover{box-shadow:0 0 30px rgba(34,197,94,.4)}
+
+/* ================================================================
+   FILHO SELECTOR
+================================================================ */
+.filho-card{
+  background:var(--sf2);border:2px solid var(--bdr-h);border-radius:var(--rs);
+  padding:14px 16px;display:flex;align-items:center;gap:12px;
+  cursor:pointer;transition:var(--t);margin-bottom:8px;
+  -webkit-tap-highlight-color:transparent;
+}
+.filho-card.sel{border-color:var(--cy);background:var(--cy-dim)}
+.filho-card input[type=checkbox]{width:18px;height:18px;accent-color:var(--cy);flex-shrink:0;pointer-events:none}
+.filho-nome{font-weight:700;font-size:15px}
+.filho-serie{font-size:12px;color:var(--cy);margin-top:2px}
+
+/* ================================================================
+   TIMER & STATUS
+================================================================ */
+.timer-wrap{text-align:center;padding:24px 16px}
+.timer-num{font-size:68px;font-weight:800;color:var(--yw);letter-spacing:4px;line-height:1;font-variant-numeric:tabular-nums}
+.timer-lbl{font-size:11px;color:var(--tx3);letter-spacing:2px;margin-top:6px}
+.status-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600}
+.status-pill.wait{background:var(--yw-dim);color:var(--yw)}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor;animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(1.5)}}
+
+/* Aluno status row */
+.aluno-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid var(--bdr-h);font-size:13px;
+}
+.aluno-row:last-child{border-bottom:none}
+.aluno-status-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px}
+.aluno-status-badge.w{background:var(--yw-dim);color:var(--yw)}
+.aluno-status-badge.d{background:var(--gn-dim);color:var(--gn)}
+
+/* ================================================================
+   SUCCESS
+================================================================ */
+.success-wrap{text-align:center;padding:40px 16px}
+.success-ico{font-size:80px;color:var(--gn);animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(0);opacity:0}65%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
+.success-title{font-size:24px;font-weight:800;color:var(--gn);margin:16px 0 6px}
+.success-sub{font-size:14px;color:var(--tx3)}
+
+/* ================================================================
+   KEYPAD
+================================================================ */
+.kp-display{
+  background:var(--sf2);border:1px solid var(--bdr-h);border-radius:var(--rs);
+  padding:18px;text-align:center;font-size:32px;letter-spacing:14px;color:var(--cy);
+  min-height:72px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.key{
+  background:var(--sf2);border:1px solid var(--bdr-h);border-radius:var(--rs);
+  padding:18px;font-size:22px;font-weight:600;color:var(--tx);
+  cursor:pointer;text-align:center;transition:var(--t);
+  user-select:none;-webkit-tap-highlight-color:transparent;
+}
+.key:hover,.key:active{background:var(--sf3);border-color:var(--cy);color:var(--cy)}
+.key.k-del{color:var(--rd)}
+.key.k-blank{visibility:hidden;cursor:default}
+
+/* ================================================================
+   MONITOR
+================================================================ */
+.mon-grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:700px){.mon-grid{grid-template-columns:1fr 1fr}}
+.sec-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.sec-title.y{color:var(--yw)}
+.sec-title.g{color:var(--gn)}
+.cnt{background:var(--yw);color:#000;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:800}
+.cnt.g{background:var(--gn)}
+
+.pedido{
+  background:var(--sf2);border:1px solid var(--bdr-h);
+  border-left:3px solid var(--yw);border-radius:var(--rs);
+  padding:12px;margin-bottom:10px;animation:slidein .25s ease;
+}
+.pedido.novo{animation:slidein .25s ease,glow 1.8s ease 2}
+@keyframes slidein{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@keyframes glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 18px var(--cy-glow)}}
+.ped-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ped-bot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+
+.avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--bdr-h);flex-shrink:0;cursor:pointer;transition:var(--t)}
+.avatar:hover{border-color:var(--cy);transform:scale(1.05)}
+.av-ph{width:44px;height:44px;border-radius:50%;background:var(--sf3);border:2px solid var(--bdr-h);display:flex;align-items:center;justify-content:center;color:var(--tx3);font-size:20px;flex-shrink:0}
+
+.ped-resp{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ped-cpf{font-size:11px;color:var(--tx3)}
+.ped-aluno{font-size:14px;font-weight:700;color:var(--cy)}
+.ped-serie{font-size:11px;color:var(--tx3)}
+.ped-timer{font-size:13px;font-weight:700;color:var(--yw);font-variant-numeric:tabular-nums;min-width:44px;text-align:center}
+.ped-timer.late{color:var(--rd)}
+
+.hist-row{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--bdr-h);font-size:13px}
+.hist-row:last-child{border-bottom:none}
+.h-aluno{flex:2;font-weight:600}
+.h-resp{flex:2;color:var(--tx2);font-size:12px}
+.h-sala{flex:1;color:var(--cy);font-size:12px}
+.h-hora{font-size:12px;color:var(--tx3);min-width:40px;text-align:right}
+
+/* ================================================================
+   TABS
+================================================================ */
+.tabs{display:flex;gap:4px;background:var(--sf);border:1px solid var(--bdr);border-radius:var(--r);padding:4px;margin-bottom:18px}
+.tab{flex:1;padding:10px 6px;border:none;border-radius:10px;background:transparent;color:var(--tx3);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:var(--t)}
+.tab.on{background:var(--sf3);color:var(--cy)}
+.tab-body{display:none}
+.tab-body.on{display:block}
+
+/* Filho input row (cadastro) */
+.frow{display:grid;grid-template-columns:2fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px}
+.frow .inp{margin-bottom:0}
+.btn-rm{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--rd-dim);border:1px solid var(--rd);border-radius:6px;color:var(--rd);cursor:pointer;font-size:16px;flex-shrink:0;transition:var(--t)}
+.btn-rm:hover{background:var(--rd);color:#fff}
+
+/* ================================================================
+   FOTO / CÂMERA
+================================================================ */
+.foto-ph{background:var(--sf2);border:2px dashed var(--bdr-h);border-radius:var(--rs);padding:28px;text-align:center;color:var(--tx3);cursor:pointer;margin-bottom:10px;transition:var(--t)}
+.foto-ph:hover{border-color:var(--cy);color:var(--cy)}
+.foto-ph i{font-size:38px;display:block;margin-bottom:8px}
+.foto-ph span{font-size:12px}
+.foto-prev{width:100%;aspect-ratio:3/4;border-radius:var(--rs);object-fit:cover;border:2px solid var(--bdr-h);margin-bottom:10px;display:none}
+
+.cam-modal{display:none;position:fixed;inset:0;background:#000;z-index:10000;flex-direction:column;align-items:center;justify-content:center}
+.cam-modal.open{display:flex}
+#vid{width:100%;height:100%;object-fit:cover}
+.face-ring{position:absolute;width:220px;height:285px;border:3px solid var(--cy);border-radius:50%;box-shadow:0 0 0 2000px rgba(0,0,0,.55);pointer-events:none}
+.cam-btns{position:absolute;bottom:36px;display:flex;gap:10px;width:88%}
+
+/* ================================================================
+   LIGHTBOX
+================================================================ */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;align-items:center;justify-content:center;padding:20px;cursor:pointer}
+.lightbox.open{display:flex}
+.lightbox img{max-width:100%;max-height:80vh;border-radius:var(--r);object-fit:contain}
+.lb-close{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:50%;background:var(--sf2);border:1px solid var(--bdr-h);color:var(--tx);font-size:20px;display:flex;align-items:center;justify-content:center}
+
+/* ================================================================
+   TOASTS
+================================================================ */
+.toast-wrap{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:8000;display:flex;flex-direction:column-reverse;align-items:center;gap:8px;width:92%;max-width:400px;pointer-events:none}
+.toast{background:var(--sf2);border:1px solid var(--bdr-h);border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.45);opacity:0;transform:translateY(12px);transition:all .25s ease;display:flex;align-items:center;gap:10px;pointer-events:auto;max-width:100%}
+.toast.show{opacity:1;transform:none}
+.toast.s{border-left:3px solid var(--gn);color:var(--gn)}
+.toast.e{border-left:3px solid var(--rd);color:var(--rd)}
+.toast.i{border-left:3px solid var(--cy);color:var(--cy)}
+.toast.w{border-left:3px solid var(--yw);color:var(--yw)}
+
+/* ================================================================
+   CONNECTION DOT
+================================================================ */
+.conn{position:fixed;top:12px;right:12px;width:9px;height:9px;border-radius:50%;background:var(--tx3);z-index:100;transition:var(--t)}
+.conn.on{background:var(--gn);box-shadow:0 0 6px var(--gn)}
+.conn.off{background:var(--rd)}
+
+/* ================================================================
+   UTILITIES
+================================================================ */
+.hidden{display:none!important}
+.tc{text-align:center}
+.mt-a{margin-top:auto}
+.muted{color:var(--tx3);font-size:13px}
+.divider{border:none;border-top:1px solid var(--bdr-h);margin:18px 0}
+.empty{text-align:center;padding:28px;color:var(--tx3);font-size:13px}
+.empty i{font-size:34px;display:block;margin-bottom:8px;opacity:.3}
+.row-flex{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.cad-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr-h)}
+.cad-row:last-child{border-bottom:none}
+.cad-av{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1.5px solid var(--bdr-h);cursor:pointer;transition:var(--t)}
+.cad-av:hover{border-color:var(--cy)}
+.cad-av-ph{width:36px;height:36px;border-radius:50%;background:var(--sf3);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--tx3);font-size:17px}
+.cad-name{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cad-info{font-size:11px;color:var(--tx3)}
+
+footer{text-align:center;padding:20px;font-size:10px;color:var(--tx3);letter-spacing:3px}
+</style>
+</head>
+<body>
+
+<!-- CONNECTION DOT -->
+<div class="conn" id="conn-dot"></div>
+
+<!-- ================================================================
+     HOME
+================================================================ -->
+<div class="screen active" id="screen-home">
+  <div class="hdr" style="padding:28px 0 20px">
+    <div class="logo">EXIT<b>FLOW</b><small>v2.1</small></div>
+  </div>
+
+  <div class="portal-card hl" onclick="nav('screen-login-pai')">
+    <div class="p-icon c"><i class="bi bi-person-fill"></i></div>
+    <div><div class="p-title">Área do Responsável</div><div class="p-sub">Pais e responsáveis</div></div>
+    <i class="bi bi-chevron-right p-arrow"></i>
+  </div>
+  <div class="portal-card" onclick="nav('screen-login-monitor')">
+    <div class="p-icon g"><i class="bi bi-display-fill"></i></div>
+    <div><div class="p-title">Monitoria</div><div class="p-sub">Painel de liberação em tempo real</div></div>
+    <i class="bi bi-chevron-right p-arrow"></i>
+  </div>
+  <div class="portal-card" onclick="nav('screen-login-dir')">
+    <div class="p-icon p"><i class="bi bi-person-lines-fill"></i></div>
+    <div><div class="p-title">Cadastros</div><div class="p-sub">Responsáveis, histórico e configurações</div></div>
+    <i class="bi bi-chevron-right p-arrow"></i>
+  </div>
+  <div class="portal-card" onclick="window.location.href='diretoria.html'">
+    <div class="p-icon" style="background:rgba(251,191,36,.1);color:#fbbf24"><i class="bi bi-bar-chart-fill"></i></div>
+    <div><div class="p-title">Diretoria</div><div class="p-sub">Dashboards e relatórios da operação</div></div>
+    <i class="bi bi-chevron-right p-arrow"></i>
+  </div>
+
+  <div class="mt-a"></div>
+  <footer>EXITFLOW v2.1 · SISTEMA DE SAÍDA ESCOLAR</footer>
+</div>
+
+<!-- ================================================================
+     LOGIN PAI
+================================================================ -->
+<div class="screen" id="screen-login-pai">
+  <div class="hdr">
+    <button class="btn-home" onclick="nav('screen-home')"><i class="bi bi-house-fill"></i> Início</button>
+    <div class="logo">EXIT<b>FLOW</b></div>
+  </div>
+  <div class="card">
+    <div class="card-lbl">Identificação do Responsável</div>
+    <label class="lbl">CPF</label>
+    <input class="inp inp-cpf" id="cpf-pai" type="tel" placeholder="000.000.000-00"
+      maxlength="14" autocomplete="off" oninput="maskCPF(this)"
+      onkeydown="if(event.key==='Enter')loginPai()">
+    <label class="chk-row">
+      <input type="checkbox" id="rem-cpf">
+      <label for="rem-cpf">Lembrar meu acesso neste dispositivo</label>
+    </label>
+    <button class="btn btn-gn" onclick="loginPai()"><i class="bi bi-box-arrow-in-right"></i> ENTRAR</button>
+    <button class="btn btn-gh btn-last" onclick="nav('screen-home')"><i class="bi bi-arrow-left"></i> VOLTAR</button>
+  </div>
+</div>
+
+<!-- ================================================================
+     PAI HOME
+================================================================ -->
+<div class="screen" id="screen-pai-home">
+  <div class="hdr">
+    <button class="btn-home" onclick="logoutPai()"><i class="bi bi-house-fill"></i> Início</button>
+    <div class="logo">EXIT<b>FLOW</b></div>
+  </div>
+
+  <div class="card">
+    <div class="card-lbl">Responsável</div>
+    <div style="font-size:19px;font-weight:700" id="nome-pai"></div>
+  </div>
+
+  <!-- Seleção de filhos -->
+  <div class="card" id="card-selecao">
+    <div class="card-lbl" id="lbl-filhos">Alunos</div>
+    <div id="lista-filhos"></div>
+    <button class="btn btn-portao btn-last" onclick="chamar()">
+      <i class="bi bi-door-open-fill"></i> ESTOU NO PORTÃO
+    </button>
+  </div>
+
+  <!-- Aguardando liberação -->
+  <div class="card hidden" id="card-wait">
+    <div class="timer-wrap">
+      <div class="timer-num" id="cron">00:00</div>
+      <div class="timer-lbl">TEMPO DE ESPERA</div>
+    </div>
+    <div class="tc" style="margin-bottom:18px">
+      <span class="status-pill wait"><span class="dot"></span> AGUARDANDO LIBERAÇÃO...</span>
+    </div>
+    <div id="alunos-wait" style="margin-bottom:16px"></div>
+    <button class="btn btn-rd btn-last" onclick="cancelarPedido()">
+      <i class="bi bi-x-circle"></i> CANCELAR PEDIDO
+    </button>
+  </div>
+
+  <div class="mt-a" style="margin-top:16px">
+    <button class="btn btn-gh btn-last" onclick="logoutPai()">
+      <i class="bi bi-box-arrow-right"></i> SAIR
+    </button>
+  </div>
+</div>
+
+<!-- ================================================================
+     PAI ENTREGUE
+================================================================ -->
+<div class="screen" id="screen-pai-entregue">
+  <div class="hdr">
+    <button class="btn-home" onclick="nav('screen-home')"><i class="bi bi-house-fill"></i> Início</button>
+    <div class="logo">EXIT<b>FLOW</b></div>
+  </div>
+  <div class="card">
+    <div class="success-wrap">
+      <div class="success-ico"><i class="bi bi-patch-check-fill"></i></div>
+      <div class="success-title">ALUNO ENTREGUE!</div>
+      <div class="success-sub">Tenha um ótimo dia.</div>
+    </div>
+  </div>
+  <div class="mt-a" style="margin-top:16px">
+    <button class="btn btn-cy" onclick="novoPedido()"><i class="bi bi-arrow-clockwise"></i> NOVO PEDIDO</button>
+    <button class="btn btn-gh btn-last" onclick="logoutPai()"><i class="bi bi-box-arrow-right"></i> SAIR</button>
+  </div>
+</div>
+
+<!-- ================================================================
+     LOGIN MONITOR
+================================================================ -->
+<div class="screen" id="screen-login-monitor">
+  <div class="hdr">
+    <button class="btn-home" onclick="nav('screen-home')"><i class="bi bi-house-fill"></i> Início</button>
+    <div class="logo">EXIT<b>FLOW</b></div>
+  </div>
+  <div class="card">
+    <div class="card-lbl">Acesso Monitoria — PIN</div>
+    <div class="kp-display" id="kp-disp-mon"></div>
+    <div class="keypad" id="kp-mon"></div>
+    <button class="btn btn-gh btn-last" onclick="nav('screen-home')"><i class="bi bi-arrow-left"></i> VOLTAR</button>
+  </div>
+</div>
+
+<!-- ================================================================
+     MONITOR
+================================================================ -->
+<div class="screen wide" id="screen-monitor">
+  <div class="hdr-wide">
+    <div class="logo" style="font-size:20px">EXIT<b>FLOW</b></div>
+    <div class="row-flex">
+      <!-- FILTRO DE SALA -->
+      <select class="sala-sel" id="sala-filter" onchange="onSalaChange()" title="Filtrar por sala">
+        <option value="">Todas as salas</option>
+      </select>
+      <span id="mon-data" style="font-size:12px;color:var(--tx3)"></span>
+      <button class="btn btn-sm btn-gh" onclick="exportSaidas()"><i class="bi bi-download"></i> CSV</button>
+      <button class="btn btn-sm btn-rd" onclick="sairMonitor()"><i class="bi bi-box-arrow-right"></i> SAIR</button>
+    </div>
+  </div>
+
+  <div class="mon-grid">
+    <div>
+      <div class="sec-title y">
+        <i class="bi bi-clock-fill"></i> PEDIDOS PENDENTES
+        <span class="cnt" id="cnt-pend">0</span>
+      </div>
+      <div id="lista-pend"></div>
+    </div>
+    <div>
+      <div class="sec-title g">
+        <i class="bi bi-check2-all"></i> SAÍDAS DE HOJE
+        <span class="cnt g" id="cnt-done">0</span>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div id="lista-done"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     LOGIN DIRETORIA
+================================================================ -->
+<div class="screen" id="screen-login-dir">
+  <div class="hdr">
+    <button class="btn-home" onclick="nav('screen-home')"><i class="bi bi-house-fill"></i> Início</button>
+    <div class="logo">EXIT<b>FLOW</b></div>
+  </div>
+  <div class="card">
+    <div class="card-lbl">Acesso Cadastros — PIN</div>
+    <div class="kp-display" id="kp-disp-dir"></div>
+    <div class="keypad" id="kp-dir"></div>
+    <button class="btn btn-gh btn-last" onclick="nav('screen-home')"><i class="bi bi-arrow-left"></i> VOLTAR</button>
+  </div>
+</div>
+
+<!-- ================================================================
+     CADASTROS
+================================================================ -->
+<div class="screen" id="screen-diretoria">
+  <div class="hdr-wide" style="padding-top:16px">
+    <div class="logo" style="font-size:20px">EXIT<b>FLOW</b></div>
+    <button class="btn btn-sm btn-gh btn-last" onclick="nav('screen-home')">
+      <i class="bi bi-box-arrow-right"></i> SAIR
+    </button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on"  onclick="openTab('t-cad',this)">Cadastro</button>
+    <button class="tab"     onclick="openTab('t-hist',this)">Histórico</button>
+    <button class="tab"     onclick="openTab('t-conf',this)">Configurar</button>
+  </div>
+
+  <!-- TAB CADASTRO -->
+  <div class="tab-body on" id="t-cad">
+    <div class="card">
+      <div class="card-lbl">Novo Cadastro / Editar</div>
+      <label class="lbl">CPF do Responsável</label>
+      <input class="inp inp-0" id="reg-cpf" type="tel" placeholder="000.000.000-00"
+        maxlength="14" oninput="maskCPF(this)" style="margin-bottom:10px">
+      <label class="lbl">Nome Completo</label>
+      <input class="inp" id="reg-nome" type="text" placeholder="Nome do responsável"
+        style="text-transform:uppercase">
+      <div class="divider"></div>
+      <div class="card-lbl">Alunos Vinculados</div>
+      <div id="cont-filhos"></div>
+      <button class="btn btn-gh" style="margin-bottom:16px" onclick="addFilho()">
+        <i class="bi bi-plus-circle"></i> ADICIONAR ALUNO
+      </button>
+      <div class="divider"></div>
+      <div class="card-lbl">Foto do Responsável</div>
+      <img class="foto-prev" id="foto-prev" src="" alt="">
+      <div class="foto-ph" id="foto-ph" onclick="abrirCam()">
+        <i class="bi bi-camera-fill"></i>
+        <span>TIRAR FOTO DO RESPONSÁVEL</span>
+      </div>
+      <button class="btn btn-gh hidden" id="btn-refoto" onclick="abrirCam()">
+        <i class="bi bi-arrow-clockwise"></i> REFAZER FOTO
+      </button>
+      <div class="divider"></div>
+      <button class="btn btn-gn" onclick="salvarCad()"><i class="bi bi-check-lg"></i> SALVAR CADASTRO</button>
+      <button class="btn btn-gh btn-last" onclick="limparCad()"><i class="bi bi-trash"></i> LIMPAR FORMULÁRIO</button>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="card-lbl" style="margin:0">RESPONSÁVEIS CADASTRADOS</div>
+        <button class="btn btn-sm btn-cy" onclick="dlCads()"><i class="bi bi-download"></i> CSV</button>
+      </div>
+      <input class="inp" id="busca-cad" type="text" placeholder="Buscar por nome ou CPF..."
+        oninput="filtrarCads(this.value)" style="margin-bottom:10px">
+      <div id="lista-cads"></div>
+    </div>
+  </div>
+
+  <!-- TAB HISTÓRICO -->
+  <div class="tab-body" id="t-hist">
+    <div class="card">
+      <div class="card-lbl">Filtrar por Data</div>
+      <label class="lbl">Data</label>
+      <input class="inp" id="filt-data" type="date" onchange="carregarHist()">
+      <button class="btn btn-cy btn-last" onclick="exportHist()">
+        <i class="bi bi-download"></i> EXPORTAR CSV
+      </button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div id="lista-hist"></div>
+    </div>
+  </div>
+
+  <!-- TAB CONFIGURAR -->
+  <div class="tab-body" id="t-conf">
+    <div class="card">
+      <div class="card-lbl">Alterar PIN da Monitoria</div>
+      <label class="lbl">Novo PIN (4 dígitos numéricos)</label>
+      <input class="inp" id="pin-mon" type="password" placeholder="0000"
+        maxlength="4" inputmode="numeric">
+      <button class="btn btn-cy btn-last" onclick="salvarPin('monitor','pin-mon')">SALVAR PIN MONITORIA</button>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Alterar PIN da Diretoria</div>
+      <label class="lbl">Novo PIN (4 dígitos numéricos)</label>
+      <input class="inp" id="pin-dir" type="password" placeholder="0000"
+        maxlength="4" inputmode="numeric">
+      <button class="btn btn-cy btn-last" onclick="salvarPin('diretoria','pin-dir')">SALVAR PIN DIRETORIA</button>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Limpar Fila do Dia</div>
+      <p class="muted" style="margin-bottom:12px">Remove todos os pedidos pendentes da fila atual.</p>
+      <button class="btn btn-rd btn-last" onclick="limparFila()">
+        <i class="bi bi-trash"></i> LIMPAR FILA
+      </button>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Informações do Sistema</div>
+      <div id="sys-info" class="muted">Carregando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="fecharLB()">
+  <div class="lb-close"><i class="bi bi-x"></i></div>
+  <img id="lb-img" src="" alt="">
+</div>
+
+<!-- CÂMERA -->
+<div class="cam-modal" id="cam-modal">
+  <video id="vid" autoplay playsinline></video>
+  <div class="face-ring"></div>
+  <div class="cam-btns">
+    <button class="btn btn-gh" onclick="fecharCam()" style="flex:1">CANCELAR</button>
+    <button class="btn btn-gn" onclick="capturar()" style="flex:2">
+      <i class="bi bi-camera-fill"></i> TIRAR FOTO
+    </button>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+'use strict';
+/* ================================================================
+   FIREBASE INIT
+================================================================ */
+firebase.initializeApp({
+  apiKey:            'AIzaSyBDdVksMaItsqib7g2wIye78q70q0KK3fk',
+  authDomain:        'saidagaia.firebaseapp.com',
+  databaseURL:       'https://saidagaia-default-rtdb.firebaseio.com',
+  projectId:         'saidagaia',
+  storageBucket:     'saidagaia.firebasestorage.app',
+  messagingSenderId: '711059544383',
+  appId:             '1:711059544383:web:217491ab4525a083709b8a'
+});
+const db = firebase.database();
+
+/* ================================================================
+   STATE
+================================================================ */
+let pai          = null;         // dados do pai logado
+let pedidoRefs   = [];           // Firebase refs dos pedidos ativos (para .off())
+let pedidosIds   = [];           // push keys dos pedidos ativos
+let cronSec      = 0;
+let cronTimer    = null;
+let monRef       = null;         // query ref do listener do monitor (FIX: detach correto)
+let monCb        = null;         // callback do listener (FIX)
+let fotoB64      = null;
+let camStream    = null;
+let allCads      = {};
+let lastMonData  = {};           // cache dos dados do monitor para re-filtrar sem nova query
+let knownPendIds = new Set();    // IDs já conhecidos — evita beep em updates que não são novos
+let photoCache   = {};           // FIX: cache de fotos para não buscar repetidamente
+let filterSala   = localStorage.getItem('ef_sala') || '';
+
+/* ================================================================
+   CONEXÃO FIREBASE
+================================================================ */
+db.ref('.info/connected').on('value', s => {
+  document.getElementById('conn-dot').className = 'conn ' + (s.val() ? 'on' : 'off');
+});
+
+/* ================================================================
+   NAVEGAÇÃO
+================================================================ */
+function nav(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ================================================================
+   TOAST
+================================================================ */
+const TICO = { s:'bi-check-circle-fill', e:'bi-x-circle-fill', i:'bi-info-circle-fill', w:'bi-exclamation-triangle-fill' };
+function toast(msg, type = 'i') {
+  const wrap = document.getElementById('toasts');
+  const el   = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<i class="bi ${TICO[type]||''}"></i>${msg}`;
+  wrap.appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 280); }, 3200);
+}
+
+/* ================================================================
+   SOUND (Web Audio API)
+================================================================ */
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [[880,0,.14],[1100,.17,.14],[880,.34,.22]].forEach(([f,s,d]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = f; o.type = 'sine';
+      g.gain.setValueAtTime(.28, ctx.currentTime + s);
+      g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + s + d);
+      o.start(ctx.currentTime + s);
+      o.stop(ctx.currentTime + s + d + .05);
+    });
+  } catch(_) {}
+}
+
+/* ================================================================
+   CPF — MÁSCARA E VALIDAÇÃO
+================================================================ */
+function maskCPF(el) {
+  let v = el.value.replace(/\D/g,'').slice(0,11);
+  if (v.length > 9)      v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/,'$1.$2.$3-$4');
+  else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{0,3})/,'$1.$2.$3');
+  else if (v.length > 3) v = v.replace(/(\d{3})(\d{0,3})/,'$1.$2');
+  el.value = v;
+}
+function rawCPF(v)  { return v.replace(/\D/g,''); }
+function fmtCPF(cpf){
+  return String(cpf).replace(/\D/g,'').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
+}
+function validCPF(cpf) {
+  cpf = rawCPF(cpf);
+  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+  let s = 0;
+  for (let i = 0; i < 9; i++) s += +cpf[i]*(10-i);
+  let r = (s*10)%11; if(r>=10) r=0; if(r!==+cpf[9]) return false;
+  s = 0;
+  for (let i = 0; i < 10; i++) s += +cpf[i]*(11-i);
+  r = (s*10)%11; if(r>=10) r=0;
+  return r===+cpf[10];
+}
+
+/* ================================================================
+   KEYPAD
+================================================================ */
+function buildKeypad(gridId, dispId, onConfirm) {
+  let val = '';
+  const disp = () => {
+    document.getElementById(dispId).innerHTML =
+      [0,1,2,3].map(i => i < val.length ? '●' : '·').join('&nbsp;&nbsp;');
+  };
+  const press = k => {
+    if (k === 'DEL') { val = val.slice(0,-1); disp(); return; }
+    if (val.length >= 4) return;
+    val += k; disp();
+    if (val.length === 4) {
+      const v = val; val = ''; disp();
+      setTimeout(() => onConfirm(v), 120);
+    }
+  };
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = '';
+  ['1','2','3','4','5','6','7','8','9','DEL','0',''].forEach(k => {
+    const d = document.createElement('div');
+    d.className = 'key' + (k==='DEL'?' k-del':'') + (!k?' k-blank':'');
+    d.textContent = k==='DEL' ? '←' : k;
+    if (k) d.onclick = () => press(k);
+    grid.appendChild(d);
+  });
+  disp();
+}
+
+async function checkPin(perfil, val, onOk) {
+  const snap = await db.ref(`config/senhas/${perfil}`).once('value');
+  const correct = snap.exists() ? snap.val() : '1234';
+  if (val === correct) onOk();
+  else toast('PIN incorreto', 'e');
+}
+
+/* ================================================================
+   LOGIN PAI
+================================================================ */
+function loginPai() {
+  const cpfVal = document.getElementById('cpf-pai').value;
+  const cpf    = rawCPF(cpfVal);
+  const rem    = document.getElementById('rem-cpf').checked;
+
+  if (!validCPF(cpf)) { toast('CPF inválido — verifique os dígitos', 'e'); return; }
+
+  db.ref('cadastros/' + cpf).once('value', snap => {
+    if (!snap.exists()) { toast('CPF não cadastrado no sistema', 'e'); return; }
+    pai = { cpf, ...snap.val() };
+    if (rem) localStorage.setItem('ef_cpf', cpfVal);
+    else     localStorage.removeItem('ef_cpf');
+    document.getElementById('nome-pai').textContent = pai.responsavel;
+    resetPaiUI();
+    renderFilhos();
+    nav('screen-pai-home');
+  });
+}
+
+/* ================================================================
+   FILHO SELECTOR (FIX: checkbox double-toggle corrigido)
+================================================================ */
+function renderFilhos() {
+  const lista  = document.getElementById('lista-filhos');
+  const lbl    = document.getElementById('lbl-filhos');
+  const filhos = pai.filhos || [];
+
+  if (!filhos.length) {
+    lista.innerHTML = '<div class="muted tc">Nenhum aluno vinculado a este CPF.</div>';
+    lbl.textContent = 'Alunos';
+    return;
+  }
+
+  if (filhos.length === 1) {
+    lbl.textContent = 'Aluno';
+    lista.innerHTML = `
+      <div class="filho-card sel" style="cursor:default;margin-bottom:12px">
+        <div><div class="filho-nome">${filhos[0].nome}</div><div class="filho-serie">Sala ${filhos[0].serie}</div></div>
+        <i class="bi bi-check-circle-fill" style="color:var(--cy);margin-left:auto"></i>
+      </div>`;
+  } else {
+    lbl.textContent = 'Selecione quem está buscando';
+    /* FIX: não colocamos onclick no checkbox — só no card.
+       O checkbox é visualmente atualizado pelo toggleFilho via pointer-events:none no CSS.
+       Isso evita o double-toggle (browser muda checked, depois toggleFilho muda de volta). */
+    lista.innerHTML = filhos.map((f, i) => `
+      <div class="filho-card" id="fc-${i}" onclick="toggleFilho(${i})">
+        <input type="checkbox" id="cb-${i}">
+        <div>
+          <div class="filho-nome">${f.nome}</div>
+          <div class="filho-serie">Sala ${f.serie}</div>
+        </div>
+      </div>`).join('');
+  }
+}
+
+/* FIX: toggle correto — só o card tem onclick; o checkbox é pointer-events:none */
+function toggleFilho(i) {
+  const cb   = document.getElementById('cb-' + i);
+  const card = document.getElementById('fc-' + i);
+  cb.checked = !cb.checked;
+  card.classList.toggle('sel', cb.checked);
+}
+
+/* ================================================================
+   CHAMAR (ESTOU NO PORTÃO)
+================================================================ */
+function chamar() {
+  const filhos = pai.filhos || [];
+  let sel = [];
+
+  if (filhos.length <= 1) {
+    sel = [...filhos];
+  } else {
+    filhos.forEach((f, i) => {
+      const cb = document.getElementById('cb-' + i);
+      if (cb && cb.checked) sel.push(f);
+    });
+  }
+
+  if (!sel.length) { toast('Selecione pelo menos um aluno', 'w'); return; }
+
+  const hoje = isoDate();
+  pedidoRefs = [];    // FIX: limpar refs anteriores
+  pedidosIds = [];
+  let entregues = 0;
+  const total   = sel.length;
+
+  sel.forEach(f => {
+    const ref = db.ref('fila').push();
+    pedidosIds.push(ref.key);
+    pedidoRefs.push(ref);   // FIX: guardar ref para poder fazer .off()
+
+    ref.set({
+      aluno:       f.nome,
+      serie:       f.serie,
+      responsavel: pai.responsavel,
+      cpf:         pai.cpf,
+      status:      'aguardando',
+      timestamp:   Date.now(),
+      data:        hoje
+    });
+
+    ref.on('value', snap => {
+      if (!snap.exists() || !snap.val()) return;
+      if (snap.val().status === 'entregue') {
+        ref.off('value');   // FIX: detach no ref correto
+        entregues++;
+        if (entregues >= total) {
+          clearInterval(cronTimer);
+          nav('screen-pai-entregue');
+        }
+      }
+    });
+  });
+
+  /* Renderizar alunos no card de espera com status individual */
+  document.getElementById('alunos-wait').innerHTML = sel.map(f => `
+    <div class="aluno-row">
+      <b>${f.nome}</b>
+      <span class="aluno-status-badge w"><span class="dot" style="width:6px;height:6px;margin-right:4px"></span>Aguardando</span>
+    </div>`).join('');
+
+  document.getElementById('card-selecao').classList.add('hidden');
+  document.getElementById('card-wait').classList.remove('hidden');
+
+  cronSec = 0;
+  cronTimer = setInterval(() => {
+    cronSec++;
+    const mm = String(Math.floor(cronSec/60)).padStart(2,'0');
+    const ss = String(cronSec%60).padStart(2,'0');
+    document.getElementById('cron').textContent = `${mm}:${ss}`;
+  }, 1000);
+}
+
+function cancelarPedido() {
+  /* FIX: detach listeners via refs guardados */
+  pedidoRefs.forEach(ref => {
+    ref.off('value');
+    ref.update({ status: 'cancelado' });
+  });
+  clearInterval(cronTimer);
+  resetPaiUI();
+  renderFilhos();
+  nav('screen-pai-home');
+  toast('Pedido cancelado', 'i');
+}
+
+function novoPedido() {
+  /* FIX: detach listeners antes de recomeçar */
+  pedidoRefs.forEach(ref => ref.off('value'));
+  resetPaiUI();
+  renderFilhos();
+  nav('screen-pai-home');
+}
+
+/* FIX: reset de estado da UI do pai (usado em logout, cancel e novoPedido) */
+function resetPaiUI() {
+  clearInterval(cronTimer);
+  cronSec = 0;
+  pedidoRefs = [];
+  pedidosIds = [];
+  document.getElementById('card-selecao').classList.remove('hidden');
+  document.getElementById('card-wait').classList.add('hidden');
+  document.getElementById('cron').textContent = '00:00';
+}
+
+function logoutPai() {
+  resetPaiUI();
+  pedidoRefs.forEach(ref => ref.off('value')); // garantia extra
+  pai = null;
+  nav('screen-home');
+}
+
+/* ================================================================
+   MONITOR
+================================================================ */
+
+/* Timer global único — atualiza todos os [data-ts] visíveis */
+setInterval(() => {
+  document.querySelectorAll('[data-ts]').forEach(el => {
+    const elapsed = Math.floor((Date.now() - +el.dataset.ts) / 1000);
+    const mm = String(Math.floor(elapsed/60)).padStart(2,'0');
+    const ss = String(elapsed%60).padStart(2,'0');
+    el.textContent = `${mm}:${ss}`;
+    el.className = 'ped-timer' + (elapsed > 300 ? ' late' : '');
+  });
+}, 1000);
+
+/* FIX: busca foto com cache — não faz requisição repetida */
+async function getPhoto(cpf) {
+  if (photoCache[cpf] !== undefined) return photoCache[cpf];
+  const snap = await db.ref('cadastros/' + cpf + '/foto').once('value');
+  photoCache[cpf] = snap.val() || null;
+  return photoCache[cpf];
+}
+
+function initMonitor() {
+  /* FIX: detach correto usando monRef (query ref) e monCb (callback) */
+  if (monRef && monCb) {
+    monRef.off('value', monCb);
+    monRef = null; monCb = null;
+  }
+  knownPendIds.clear();
+  photoCache = {};
+  filterSala = localStorage.getItem('ef_sala') || '';
+
+  document.getElementById('mon-data').textContent =
+    new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+
+  /* Popula o filtro de salas a partir dos cadastros */
+  populateSalaFilter();
+
+  const hoje = isoDate();
+  monRef = db.ref('fila').orderByChild('data').equalTo(hoje);
+
+  monCb = monRef.on('value', snap => {
+    lastMonData = snap.val() || {};
+    renderMonitorData();
+  });
+}
+
+/* Popula o dropdown de salas com base nos cadastros */
+function populateSalaFilter() {
+  db.ref('cadastros').once('value', snap => {
+    const salas = new Set();
+    snap.forEach(c => {
+      (c.val().filhos || []).forEach(f => { if (f.serie) salas.add(f.serie.toUpperCase()); });
+    });
+    const sel = document.getElementById('sala-filter');
+    const cur = filterSala;
+    sel.innerHTML = '<option value="">Todas as salas</option>' +
+      [...salas].sort().map(s =>
+        `<option value="${s}"${s===cur?' selected':''}>${s}</option>`
+      ).join('');
+  });
+}
+
+function onSalaChange() {
+  filterSala = document.getElementById('sala-filter').value;
+  localStorage.setItem('ef_sala', filterSala);
+  renderMonitorData();
+}
+
+/* Renderiza pendentes e histórico com o filtro aplicado */
+function renderMonitorData() {
+  const dados = lastMonData;
+  const sala  = filterSala;
+  const pend  = [], done = [];
+
+  Object.entries(dados).forEach(([id, v]) => {
+    const match = !sala || (v.serie || '').toUpperCase() === sala;
+    if (!match) return;
+    if (v.status === 'aguardando') pend.push({ id, ...v });
+    else if (v.status === 'entregue') done.push({ id, ...v });
+  });
+
+  /* Detectar pedidos genuinamente novos para beep */
+  const currentIds = new Set(pend.map(p => p.id));
+  const hasNew = [...currentIds].some(id => !knownPendIds.has(id));
+  if (hasNew && knownPendIds.size > 0) beep(); // não beepa na carga inicial
+  knownPendIds = currentIds;
+
+  document.title = pend.length ? `(${pend.length}) ExitFlow` : 'ExitFlow';
+  document.getElementById('cnt-pend').textContent = pend.length;
+  document.getElementById('cnt-done').textContent = done.length;
+
+  renderPendentes(pend);
+  renderHistorico(done);
+}
+
+/* FIX: cards criados sincronamente (ordem preservada), fotos atualizadas async */
+function renderPendentes(pend) {
+  const lp = document.getElementById('lista-pend');
+  if (!pend.length) {
+    lp.innerHTML = '<div class="empty"><i class="bi bi-inbox"></i>Nenhum pedido no momento</div>';
+    return;
+  }
+  pend.sort((a,b) => a.timestamp - b.timestamp);
+
+  /* Criar todos os cards com placeholder de avatar */
+  lp.innerHTML = pend.map(item => `
+    <div class="pedido" id="p-${item.id}">
+      <div class="ped-top">
+        <div class="av-ph" id="av-${item.id}"><i class="bi bi-person-fill"></i></div>
+        <div style="flex:1;min-width:0">
+          <div class="ped-resp">${escHtml(item.responsavel)}</div>
+          <div class="ped-cpf">${fmtCPF(item.cpf)}</div>
+        </div>
+      </div>
+      <div class="ped-bot">
+        <div>
+          <div class="ped-aluno">${escHtml(item.aluno)}</div>
+          <div class="ped-serie">Sala ${escHtml(item.serie)}</div>
+        </div>
+        <div class="ped-timer" data-ts="${item.timestamp}">--:--</div>
+        <button class="btn btn-sm btn-gn" onclick="liberar('${item.id}')">
+          <i class="bi bi-check-lg"></i> LIBERAR
+        </button>
+      </div>
+    </div>`).join('');
+
+  /* Carregar fotos async sem afetar a ordem dos cards */
+  pend.forEach(async item => {
+    const foto = await getPhoto(item.cpf);
+    if (!foto) return;
+    const avEl = document.getElementById('av-' + item.id);
+    if (avEl) {
+      avEl.outerHTML = `<img class="avatar" id="av-${item.id}"
+        src="${foto}" alt="Foto de ${escHtml(item.responsavel)}"
+        onclick="abrirLB(this.src)">`;
+    }
+  });
+}
+
+function renderHistorico(done) {
+  const ld = document.getElementById('lista-done');
+  if (!done.length) {
+    ld.innerHTML = '<div class="empty"><i class="bi bi-calendar-x"></i>Sem saídas registradas</div>';
+    return;
+  }
+  done.sort((a,b) => b.timestamp - a.timestamp);
+  ld.innerHTML = done.map(v => `
+    <div class="hist-row">
+      <div class="h-aluno">${escHtml(v.aluno)}</div>
+      <div class="h-resp">${escHtml(v.responsavel)}</div>
+      <div class="h-sala">${escHtml(v.serie)}</div>
+      <div class="h-hora">${v.saida||'--'}</div>
+    </div>`).join('');
+}
+
+function liberar(id) {
+  const now = Date.now();
+  db.ref('fila/' + id).update({
+    status:  'entregue',
+    saida:   new Date(now).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+    saidaTs: now   // timestamp exato para cálculo de tempo médio na Diretoria
+  });
+  toast('Aluno liberado!', 's');
+}
+
+function sairMonitor() {
+  /* FIX: detach correto */
+  if (monRef && monCb) { monRef.off('value', monCb); monRef = null; monCb = null; }
+  knownPendIds.clear();
+  photoCache = {};
+  lastMonData = {};
+  document.title = 'ExitFlow';
+  nav('screen-home');
+}
+
+function exportSaidas() {
+  const hoje = isoDate();
+  db.ref('fila').orderByChild('data').equalTo(hoje).once('value', snap => {
+    let csv = 'ALUNO;SALA;RESPONSAVEL;CPF;HORA\n';
+    snap.forEach(p => {
+      const d = p.val();
+      if (d.status === 'entregue')
+        csv += `${d.aluno};${d.serie};${d.responsavel};${fmtCPF(d.cpf)};${d.saida}\n`;
+    });
+    dlCSV(csv, `Saidas_ExitFlow_${hoje}.csv`);
+    toast('Relatório exportado', 's');
+  });
+}
+
+/* ================================================================
+   DIRETORIA
+================================================================ */
+function initDir() {
+  carregarCads();
+  const hoje = isoDate();
+  const fd = document.getElementById('filt-data');
+  if (fd) { fd.value = hoje; carregarHist(); }
+  /* Info do sistema */
+  db.ref('fila').orderByChild('data').equalTo(hoje).once('value', snap => {
+    const total = Object.keys(snap.val() || {}).length;
+    document.getElementById('sys-info').innerHTML =
+      `Pedidos hoje: <b>${total}</b> &nbsp;·&nbsp; Versão: <b>2.1</b>`;
+  });
+}
+
+function openTab(id, btn) {
+  document.querySelectorAll('.tab-body').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+}
+
+/* --- CADASTRO --- */
+function addFilho() {
+  const cont = document.getElementById('cont-filhos');
+  const row  = document.createElement('div');
+  row.className = 'frow';
+  row.innerHTML = `
+    <input class="inp inp-0 reg-aluno" type="text" placeholder="Nome do aluno" style="text-transform:uppercase">
+    <input class="inp inp-0 reg-serie" type="text" placeholder="Sala">
+    <div class="btn-rm" onclick="this.closest('.frow').remove()"><i class="bi bi-trash"></i></div>`;
+  cont.appendChild(row);
+}
+
+function salvarCad() {
+  const cpf  = rawCPF(document.getElementById('reg-cpf').value);
+  const nome = document.getElementById('reg-nome').value.trim().toUpperCase();
+
+  if (!validCPF(cpf))  { toast('CPF inválido — verifique os dígitos', 'e'); return; }
+  if (!nome)            { toast('Informe o nome do responsável', 'e'); return; }
+  if (!fotoB64)         { toast('Foto obrigatória para segurança', 'e'); return; }
+
+  const alunos = [...document.querySelectorAll('#cont-filhos .reg-aluno')];
+  const series = [...document.querySelectorAll('#cont-filhos .reg-serie')];
+  const filhos = [];
+  alunos.forEach((n, i) => {
+    const nome = n.value.trim().toUpperCase();
+    const sala = series[i].value.trim().toUpperCase();
+    if (nome && sala) filhos.push({ nome, serie: sala });
+    else if (nome)   toast(`Informe a sala do aluno: ${nome}`, 'w');
+  });
+  if (!filhos.length) { toast('Adicione pelo menos um aluno com nome e sala', 'e'); return; }
+
+  db.ref('cadastros/' + cpf)
+    .set({ responsavel:nome, filhos, foto:fotoB64, ativo:true, updatedAt:Date.now() })
+    .then(() => { toast('Cadastro salvo com sucesso!', 's'); limparCad(); carregarCads(); })
+    .catch(() => toast('Erro ao salvar — verifique a conexão', 'e'));
+}
+
+function limparCad() {
+  document.getElementById('reg-cpf').value  = '';
+  document.getElementById('reg-nome').value = '';
+  document.getElementById('cont-filhos').innerHTML = '';
+  addFilho();
+  fotoB64 = null;
+  document.getElementById('foto-prev').style.display = 'none';
+  document.getElementById('foto-ph').style.display   = 'block';
+  document.getElementById('btn-refoto').classList.add('hidden');
+}
+
+function carregarCads() {
+  db.ref('cadastros').once('value', snap => {
+    allCads = snap.val() || {};
+    renderCads(allCads);
+  });
+}
+
+function renderCads(data) {
+  const el      = document.getElementById('lista-cads');
+  const entries = Object.entries(data);
+  if (!entries.length) {
+    el.innerHTML = '<div class="empty"><i class="bi bi-people"></i>Nenhum cadastro encontrado</div>';
+    return;
+  }
+  entries.sort((a,b) => a[1].responsavel.localeCompare(b[1].responsavel));
+  el.innerHTML = entries.map(([cpf, d]) => {
+    const av = d.foto
+      ? `<img class="cad-av" src="${d.foto}" onclick="abrirLB('${d.foto}')" alt="" title="Ver foto">`
+      : `<div class="cad-av-ph"><i class="bi bi-person-fill"></i></div>`;
+    return `
+      <div class="cad-row">
+        ${av}
+        <div style="flex:1;min-width:0">
+          <div class="cad-name">${escHtml(d.responsavel)}</div>
+          <div class="cad-info">${fmtCPF(cpf)} · ${(d.filhos||[]).length} aluno(s): ${(d.filhos||[]).map(f=>f.nome).join(', ')}</div>
+        </div>
+        <button class="btn btn-sm btn-gh" onclick="editarCad('${cpf}')" style="margin-right:4px" title="Editar"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-sm btn-rd" onclick="excluirCad('${cpf}')" title="Excluir"><i class="bi bi-trash"></i></button>
+      </div>`;
+  }).join('');
+}
+
+function filtrarCads(termo) {
+  if (!termo.trim()) { renderCads(allCads); return; }
+  const t = termo.toLowerCase();
+  const fil = Object.fromEntries(
+    Object.entries(allCads).filter(([cpf, d]) =>
+      cpf.includes(t) || d.responsavel.toLowerCase().includes(t) ||
+      (d.filhos||[]).some(f => f.nome.toLowerCase().includes(t))
+    )
+  );
+  renderCads(fil);
+}
+
+function editarCad(cpf) {
+  const d = allCads[cpf];
+  if (!d) return;
+  document.getElementById('reg-cpf').value  = fmtCPF(cpf);
+  document.getElementById('reg-nome').value = d.responsavel;
+  document.getElementById('cont-filhos').innerHTML = '';
+  (d.filhos||[]).forEach(f => {
+    addFilho();
+    const rows = document.querySelectorAll('#cont-filhos .frow');
+    const last = rows[rows.length - 1];
+    last.querySelector('.reg-aluno').value = f.nome;
+    last.querySelector('.reg-serie').value = f.serie;
+  });
+  if (d.foto) {
+    fotoB64 = d.foto;
+    const prev = document.getElementById('foto-prev');
+    prev.src = d.foto; prev.style.display = 'block';
+    document.getElementById('foto-ph').style.display = 'none';
+    document.getElementById('btn-refoto').classList.remove('hidden');
+  }
+  /* FIX: seleção de tab robusta via ID */
+  const tabCad = document.getElementById('t-cad');
+  const tabBtn = document.querySelector('.tab.on') || document.querySelector('.tab');
+  openTab('t-cad', document.querySelectorAll('.tab')[0]);
+  window.scrollTo(0, 0);
+  toast('Cadastro carregado para edição', 'i');
+}
+
+function excluirCad(cpf) {
+  const nome = allCads[cpf]?.responsavel || cpf;
+  if (!confirm(`Excluir o cadastro de ${nome}?\nEsta ação não pode ser desfeita.`)) return;
+  db.ref('cadastros/' + cpf).remove()
+    .then(() => { toast('Cadastro excluído', 's'); carregarCads(); })
+    .catch(() => toast('Erro ao excluir', 'e'));
+}
+
+function dlCads() {
+  if (!Object.keys(allCads).length) { toast('Nenhum cadastro para exportar', 'w'); return; }
+  let csv = 'RESPONSAVEL;CPF;ALUNOS\n';
+  Object.entries(allCads).forEach(([cpf, d]) => {
+    csv += `${d.responsavel};${fmtCPF(cpf)};${(d.filhos||[]).map(f=>`${f.nome}(${f.serie})`).join('|')}\n`;
+  });
+  dlCSV(csv, 'Cadastros_ExitFlow.csv');
+  toast('Lista exportada', 's');
+}
+
+/* --- HISTÓRICO --- */
+function carregarHist() {
+  const data = document.getElementById('filt-data').value;
+  if (!data) { toast('Selecione uma data', 'w'); return; }
+  db.ref('fila').orderByChild('data').equalTo(data).once('value', snap => {
+    const list = Object.values(snap.val() || {}).filter(d => d.status === 'entregue');
+    const el   = document.getElementById('lista-hist');
+    if (!list.length) {
+      el.innerHTML = '<div class="empty"><i class="bi bi-calendar-x"></i>Sem saídas nesta data</div>';
+      return;
+    }
+    list.sort((a,b) => b.timestamp - a.timestamp);
+    el.innerHTML = list.map(v => `
+      <div class="hist-row">
+        <div class="h-aluno">${escHtml(v.aluno)}</div>
+        <div class="h-resp">${escHtml(v.responsavel)}</div>
+        <div class="h-sala">${escHtml(v.serie)}</div>
+        <div class="h-hora">${v.saida||'--'}</div>
+      </div>`).join('');
+  });
+}
+
+function exportHist() {
+  const data = document.getElementById('filt-data').value;
+  if (!data) { toast('Selecione uma data', 'w'); return; }
+  db.ref('fila').orderByChild('data').equalTo(data).once('value', snap => {
+    let csv = 'ALUNO;SALA;RESPONSAVEL;CPF;HORA\n';
+    snap.forEach(p => {
+      const d = p.val();
+      if (d.status === 'entregue')
+        csv += `${d.aluno};${d.serie};${d.responsavel};${fmtCPF(d.cpf)};${d.saida}\n`;
+    });
+    dlCSV(csv, `Saidas_ExitFlow_${data}.csv`);
+    toast('Relatório exportado', 's');
+  });
+}
+
+/* --- CONFIGURAÇÕES --- */
+function salvarPin(perfil, inputId) {
+  const pin = document.getElementById(inputId).value.trim();
+  if (!/^\d{4}$/.test(pin)) { toast('PIN deve ter exatamente 4 dígitos numéricos', 'e'); return; }
+  db.ref(`config/senhas/${perfil}`).set(pin)
+    .then(() => { toast(`PIN da ${perfil} salvo!`, 's'); document.getElementById(inputId).value = ''; })
+    .catch(() => toast('Erro ao salvar PIN', 'e'));
+}
+
+function limparFila() {
+  if (!confirm('Limpar todos os pedidos pendentes da fila? Esta ação não pode ser desfeita.')) return;
+  const hoje = isoDate();
+  db.ref('fila').orderByChild('data').equalTo(hoje).once('value', snap => {
+    const updates = {};
+    snap.forEach(c => {
+      if (c.val().status === 'aguardando') updates[c.key + '/status'] = 'cancelado';
+    });
+    if (!Object.keys(updates).length) { toast('Nenhum pedido pendente na fila', 'i'); return; }
+    db.ref('fila').update(updates)
+      .then(() => toast('Fila limpa com sucesso', 's'))
+      .catch(() => toast('Erro ao limpar fila', 'e'));
+  });
+}
+
+/* ================================================================
+   CÂMERA
+================================================================ */
+async function abrirCam() {
+  document.getElementById('cam-modal').classList.add('open');
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode:'user', width:{ideal:1280}, height:{ideal:960} }
+    });
+    document.getElementById('vid').srcObject = camStream;
+  } catch(err) {
+    toast('Câmera não disponível: ' + err.message, 'e');
+    fecharCam();
+  }
+}
+
+function fecharCam() {
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  document.getElementById('cam-modal').classList.remove('open');
+}
+
+function capturar() {
+  const vid = document.getElementById('vid');
+  if (!vid.readyState || vid.readyState < 2) { toast('Aguarde a câmera inicializar', 'w'); return; }
+  const c = document.createElement('canvas');
+  c.width = 480; c.height = 640;
+  const ctx = c.getContext('2d');
+  const vw = vid.videoWidth, vh = vid.videoHeight;
+  const tr = 3/4, vr = vw/vh;
+  let sx, sy, sw, sh;
+  if (vr > tr) { sh=vh; sw=vh*tr; sx=(vw-sw)/2; sy=0; }
+  else          { sw=vw; sh=vw/tr; sx=0; sy=(vh-sh)/2; }
+  ctx.drawImage(vid, sx,sy,sw,sh, 0,0,480,640);
+  fotoB64 = c.toDataURL('image/jpeg', .78);
+  const prev = document.getElementById('foto-prev');
+  prev.src = fotoB64; prev.style.display = 'block';
+  document.getElementById('foto-ph').style.display    = 'none';
+  document.getElementById('btn-refoto').classList.remove('hidden');
+  fecharCam();
+  toast('Foto capturada!', 's');
+}
+
+/* ================================================================
+   LIGHTBOX
+================================================================ */
+function abrirLB(src) {
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function fecharLB() { document.getElementById('lightbox').classList.remove('open'); }
+
+/* ================================================================
+   UTILS
+================================================================ */
+function isoDate() { return new Date().toISOString().split('T')[0]; }
+
+function dlCSV(content, filename) {
+  const blob = new Blob(['﻿' + content], { type:'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+/* Escapa HTML para evitar XSS nos dados do Firebase */
+function escHtml(str) {
+  return String(str||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+/* ================================================================
+   INIT
+================================================================ */
+window.addEventListener('load', () => {
+  /* Restaurar CPF salvo */
+  const saved = localStorage.getItem('ef_cpf');
+  if (saved) {
+    document.getElementById('cpf-pai').value = saved;
+    document.getElementById('rem-cpf').checked = true;
+  }
+
+  /* Keypads */
+  buildKeypad('kp-mon', 'kp-disp-mon', pin => {
+    checkPin('monitor', pin, () => { initMonitor(); nav('screen-monitor'); });
+  });
+  buildKeypad('kp-dir', 'kp-disp-dir', pin => {
+    checkPin('diretoria', pin, () => { initDir(); nav('screen-diretoria'); });
+  });
+
+  /* Primeiro campo de filho no form de cadastro */
+  addFilho();
+});
+</script>
+</body>
+</html>

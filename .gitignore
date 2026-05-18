@@ -1,0 +1,6 @@
+# PDF grande - não versionar
+*.pdf
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExitFlow | Gestão Inteligente de Saída Escolar</title>
+    <meta name="description" content="Otimize a saída escolar com ExitFlow. Segurança, leveza e liberdade para sua escola.">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <style>
+        :root { --neon: #00d4ff; --dark: #05070a; --panel: #0d1117; --accent: #1e293b; }
+        body { background: var(--dark); color: white; font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; }
+        
+        /* Animação de entrada suave */
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* Barra de Acesso Superior */
+        .system-bar { background: #000; padding: 10px 0; border-bottom: 1px solid var(--accent); font-size: 0.8rem; }
+        .system-link { color: #8b949e; text-decoration: none; margin-left: 20px; font-weight: 600; transition: 0.3s; }
+        .system-link:hover { color: var(--neon); }
+        .system-link i { color: var(--neon); margin-right: 5px; }
+
+        /* Navbar */
+        .navbar { background: rgba(5, 7, 10, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--accent); }
+        .nav-link { font-weight: 500; margin: 0 10px; color: #fff !important; transition: 0.3s; }
+        .nav-link:hover { color: var(--neon) !important; transform: scale(1.1); }
+        .highlight { color: var(--neon); text-shadow: 0 0 10px rgba(0, 212, 255, 0.3); }
+
+        /* Hero */
+        .hero { background: radial-gradient(circle at top right, rgba(0,212,255,0.08), transparent); padding: 120px 0; }
+        
+        /* Cards com efeito Neon */
+        .card-pilar { background: var(--panel); border: 1px solid var(--accent); padding: 40px; border-radius: 20px; height: 100%; transition: 0.4s; }
+        .card-pilar:hover { border-color: var(--neon); transform: translateY(-10px); box-shadow: 0 10px 30px rgba(0, 212, 255, 0.1); }
+        .icon-feat { font-size: 2.5rem; color: var(--neon); margin-bottom: 20px; display: block; }
+
+        /* Preços */
+        .price-box { background: linear-gradient(145deg, #0d1117, #05070a); border: 2px solid var(--neon); border-radius: 30px; padding: 50px; display: inline-block; text-align: left; position: relative; }
+        .price-box:hover { box-shadow: 0 0 40px rgba(0, 212, 255, 0.15); }
+
+        /* Botão WhatsApp */
+        .btn-main { background: var(--neon); color: #000; font-weight: 800; border-radius: 50px; padding: 18px 40px; text-decoration: none; display: inline-block; transition: 0.3s; border: none; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-main:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(0,212,255,0.5); color: #000; }
+        
+        .contact-link { color: var(--neon); text-decoration: none; font-weight: bold; }
+        .contact-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="system-bar">
+        <div class="container d-flex justify-content-end">
+            <a href="https://gustavofilipe1707-stack.github.io/exitflow_crm/" target="_blank" class="system-link">
+                <i class="bi bi-gear-fill"></i> ACESSO CRM EXITFLOW
+            </a>
+            <a href="https://gustavofilipe1707-stack.github.io/deciomachadogaia/" target="_blank" class="system-link">
+                <i class="bi bi-display"></i> ACESSO DEMONSTRATIVO
+            </a>
+        </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-3 animate__animated animate__fadeInLeft" href="#">EXIT<span class="highlight">FLOW</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#missao">Missão</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#pilares">Pilares</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#precos">Planos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contato">Contato</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero text-center animate__animated animate__fadeIn">
+        <div class="container">
+            <h1 class="display-3 fw-bold mb-4">A evolução tecnológica da <span class="highlight">saída escolar</span>.</h1>
+            <p class="lead text-secondary mb-5 mx-auto" style="max-width: 750px;">
+                O ExitFlow automatiza a comunicação entre pais e escola, reduzindo o tempo de espera e elevando o padrão de segurança com tecnologia leve.
+            </p>
+            <a href="#contato" class="btn-main">SOLICITAR DEMONSTRAÇÃO</a>
+        </div>
+    </header>
+
+    <section id="missao" class="bg-black text-center reveal">
+        <div class="container">
+            <h2 class="fw-bold mb-4">Nossa Missão</h2>
+            <p class="fs-4 text-secondary mx-auto" style="max-width: 900px;">
+                Transformar o momento da saída escolar em uma experiência fluida e segura, eliminando gargalos logísticos e trazendo tranquilidade absoluta para pais e gestores.
+            </p>
+        </div>
+    </section>
+
+    <section id="pilares" class="reveal">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card-pilar text-center">
+                        <i class="bi bi-shield-lock-fill icon-feat"></i>
+                        <h4>Segurança</h4>
+                        <p class="text-secondary">Validação rigorosa por foto e documentos registrados. Controle total no portão.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card-pilar text-center">
+                        <i class="bi bi-lightning-fill icon-feat"></i>
+                        <h4>Leveza</h4>
+                        <p class="text-secondary">Estrutura extremamente leve. Não exige grandes implantações ou obras físicas.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card-pilar text-center">
+                        <i class="bi bi-check-circle-fill icon-feat"></i>
+                        <h4>Liberdade</h4>
+                        <p class="text-secondary">Modelo de pagamento mensal. Sem contratos longos ou multas de fidelidade.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="precos" class="bg-black text-center reveal">
+        <div class="container">
+            <h2 class="fw-bold mb-2">Planos a partir de R$ 299</h2>
+            <p class="text-secondary mb-5">Tecnologia de elite acessível para sua unidade.</p>
+            <div class="price-box">
+                <div class="text-center mb-4">
+                    <div class="display-4 fw-bold highlight mb-1">R$ 299<small style="font-size: 1rem; color: gray;">/mês</small></div>
+                    <span class="badge bg-info text-dark">IMPLANTAÇÃO LEVE</span>
+                </div>
+                <ul class="list-unstyled mb-4">
+                    <li class="mb-2"><i class="bi bi-check2 text-info me-2"></i> Monitoramento em tempo real</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-info me-2"></i> Sem necessidade de obras físicas</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-info me-2"></i> Pagamento mensal sem fidelidade</li>
+                </ul>
+                <div class="text-center border-top border-secondary pt-4">
+                    <h4 class="fw-bold mb-3">Gostou?</h4>
+                    <a href="#contato" class="btn btn-info text-dark fw-bold px-5 py-2 rounded-pill">FALE CONOSCO</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contato" class="reveal">
+        <div class="container">
+            <div class="contact-box text-center">
+                <h2 class="fw-bold mb-4">Solicite uma demonstração</h2>
+                <p class="text-secondary mb-2">Fale diretamente com nosso time técnico:</p>
+                <p class="mb-4">
+                    <i class="bi bi-envelope-at highlight me-2"></i> 
+                    <a href="mailto:gustavo@exitflow.com.br" class="contact-link">gustavo@exitflow.com.br</a>
+                </p>
+                <a href="https://wa.me/551151081995" target="_blank" class="btn-main">
+                    <i class="bi bi-whatsapp me-2"></i> INICIAR CONVERSA NO WHATSAPP
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-5 text-center text-secondary border-top border-secondary">
+        <div class="container">
+            <p>Desenvolvido por <strong>Exitflowtech</strong> em 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 150;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal(); // Para checar no carregamento inicial
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

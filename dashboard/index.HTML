@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExitFlow | Dashboard Direção</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg: #030508;
+            --panel: #0a0d12;
+            --neon: #00d4ff;
+            --text: #f1f5f9;
+            --border: #1e293b;
+            --danger: #ff4d4d;
+            --success: #22c55e;
+            --warning: #ffc107;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* HEADER REDUZIDO */
+        header {
+            background: var(--panel);
+            border-bottom: 2px solid var(--border);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--danger);
+            display: inline-block;
+            box-shadow: 0 0 10px var(--danger);
+        }
+
+        .status-online {
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success);
+        }
+
+        /* KPI GRID */
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .kpi-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--neon);
+        }
+
+        .kpi-value {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .kpi-label {
+            font-size: 0.75rem;
+            color: #8b949e;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* TABELA MONITORAMENTO */
+        .monitor-area {
+            padding: 0 20px 20px 20px;
+            height: calc(100vh - 180px);
+        }
+
+        .table-panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .table thead th {
+            background: #161b22;
+            color: #8b949e;
+            border: none;
+            padding: 15px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            position: sticky;
+            top: 0;
+        }
+
+        .table tbody td {
+            padding: 18px 15px;
+            border-bottom: 1px solid #161b22;
+            vertical-align: middle;
+            font-size: 1.1rem;
+        }
+
+        /* ALERTAS DE TEMPO */
+        .row-warning {
+            background: rgba(255, 193, 7, 0.05) !important;
+        }
+
+        .row-danger {
+            background: rgba(255, 77, 77, 0.1) !important;
+            animation: pulse-danger 2s infinite;
+        }
+
+        @keyframes pulse-danger {
+            0% {
+                box-shadow: inset 0 0 0px rgba(255, 77, 77, 0);
+            }
+
+            50% {
+                box-shadow: inset 0 0 20px rgba(255, 77, 77, 0.2);
+            }
+
+            100% {
+                box-shadow: inset 0 0 0px rgba(255, 77, 77, 0);
+            }
+        }
+
+        .badge-waiting {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--neon);
+            border: 1px solid var(--neon);
+            padding: 5px 15px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* LOGIN OVERLAY */
+        #login-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-box {
+            background: var(--panel);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            width: 350px;
+            text-align: center;
+        }
+
+        .btn-enter {
+            background: var(--neon);
+            color: black;
+            font-weight: bold;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        input {
+            background: #000 !important;
+            border: 1px solid var(--border) !important;
+            color: white !important;
+            margin-bottom: 10px;
+            padding: 12px !important;
+            border-radius: 10px !important;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h3 style="color: var(--neon); margin-bottom: 25px;">EXITFLOW <br><small class="text-white">DIREÇÃO</small>
+            </h3>
+            <input type="password" id="pass" placeholder="Senha de Acesso" class="form-control text-center">
+            <button class="btn-enter" onclick="auth()">ACESSAR PAINEL</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="logo-box">
+            <div class="fw-bold" style="color: var(--neon); font-size: 1.5rem; letter-spacing: 2px;">EXITFLOW</div>
+            <div class="vr" style="height: 30px; background: #334155;"></div>
+            <div class="small text-secondary">MONITORAMENTO ESTRATÉGICO</div>
+        </div>
+        <div class="d-flex align-items-center gap-4">
+            <div class="text-end">
+                <div class="small text-secondary">STATUS DA REDE</div>
+                <div id="net-status"><span class="status-dot status-online"></span> <small>SISTEMA ONLINE</small></div>
+            </div>
+            <button class="btn btn-outline-secondary btn-sm" onclick="location.reload()">RECARREGAR</button>
+        </div>
+    </header>
+
+    <div class="kpi-container">
+        <div class="kpi-card">
+            <div class="kpi-label">Pais na Porta</div>
+            <div class="kpi-value text-warning" id="kpi-waiting">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Alunos Entregues</div>
+            <div class="kpi-value text-success" id="kpi-done">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Tempo Médio (Hoje)</div>
+            <div class="kpi-value" style="color: var(--neon)">3.2<small style="font-size: 1.2rem">min</small></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Fluxo de Operação</div>
+            <div class="kpi-value text-info" id="kpi-health">100%</div>
+        </div>
+    </div>
+
+    <div class="monitor-area">
+        <div class="table-panel">
+            <table class="table table-dark mb-0">
+                <thead>
+                    <tr>
+                        <th width="30%">ALUNO / SÉRIE</th>
+                        <th width="30%">RESPONSÁVEL (PAI/MÃE)</th>
+                        <th width="15%">HORA CHEGADA</th>
+                        <th width="15%">TEMPO DE ESPERA</th>
+                        <th width="10%">STATUS</th>
+                    </tr>
+                </thead>
+                <tbody id="live-body">
+                    <tr>
+                        <td colspan="5" class="text-center py-5">Aguardando dados do Firebase...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Configuração Firebase (Use sua URL atual)
+        const config = { databaseURL: "https://saidagaia-default-rtdb.firebaseio.com" };
+        firebase.initializeApp(config);
+        const db = firebase.database();
+
+        function auth() {
+            if (document.getElementById('pass').value === "1234") {
+                document.getElementById('login-overlay').style.display = 'none';
+                startMonitor();
+            } else {
+                alert("Senha inválida");
+            }
+        }
+
+        function startMonitor() {
+            const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+
+            // Monitor de Conexão
+            db.ref(".info/connected").on("value", snap => {
+                const dot = document.querySelector('.status-dot');
+                if (snap.val()) {
+                    dot.classList.add('status-online');
+                } else {
+                    dot.classList.remove('status-online');
+                }
+            });
+
+            // Dados da Fila
+            db.ref('fila/').orderByChild('data').equalTo(hoje).on('value', snap => {
+                const data = snap.val() || {};
+                let waiting = 0;
+                let done = 0;
+                let html = "";
+
+                // Ordenar: primeiro quem está esperando há MAIS TEMPO (prioridade diretor)
+                const list = Object.keys(data).map(id => ({ id, ...data[id] }))
+                    .sort((a, b) => a.timestamp - b.timestamp);
+
+                list.forEach(item => {
+                    if (item.status === 'aguardando') {
+                        waiting++;
+                        const diff = Math.floor((new Date() - item.timestamp) / 60000);
+
+                        let rowClass = "";
+                        if (diff >= 8) rowClass = "row-danger";
+                        else if (diff >= 5) rowClass = "row-warning";
+
+                        html += `
+                            <tr class="${rowClass}" data-ts="${item.timestamp}">
+                                <td>
+                                    <span class="fw-bold">${item.aluno}</span><br>
+                                    <small class="text-secondary">${item.serie}</small>
+                                </td>
+                                <td>${item.responsavel}</td>
+                                <td>${new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                                <td class="fw-bold timer-val">${diff} min</td>
+                                <td><span class="badge-waiting">NA PORTA</span></td>
+                            </tr>
+                        `;
+                    } else {
+                        done++;
+                    }
+                });
+
+                document.getElementById('kpi-waiting').innerText = waiting;
+                document.getElementById('kpi-done').innerText = done;
+                document.getElementById('live-body').innerHTML = html || '<tr><td colspan="5" class="text-center py-5 text-secondary">Nenhum pai aguardando no momento. Operação limpa.</td></tr>';
+
+                // Cálculo de Saúde da Operação (Exemplo: se houver gente esperando > 8min, a saúde cai)
+                let health = 100;
+                if (waiting > 0) {
+                    const longWaiters = list.filter(i => i.status === 'aguardando' && (new Date() - i.timestamp) / 60000 > 8).length;
+                    health = Math.max(0, 100 - (longWaiters * 10));
+                }
+                document.getElementById('kpi-health').innerText = health + "%";
+            });
+        }
+
+        // Loop de atualização dos timers a cada 15 segundos
+        setInterval(() => {
+            document.querySelectorAll('#live-body tr').forEach(row => {
+                const ts = row.getAttribute('data-ts');
+                if (ts) {
+                    const diff = Math.floor((new Date() - parseInt(ts)) / 60000);
+                    row.querySelector('.timer-val').innerText = diff + " min";
+
+                    if (diff >= 8) row.className = "row-danger";
+                    else if (diff >= 5) row.className = "row-warning";
+                }
+            });
+        }, 15000);
+    </script>
+</body>
+
+</html>
